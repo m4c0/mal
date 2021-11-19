@@ -1,3 +1,6 @@
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+
 #include <iostream>
 #include <string>
 
@@ -16,6 +19,10 @@ auto rep(const std::string & s) {
 }
 
 int main() {
+  llvm::LLVMContext ctx;
+  llvm::Module m { "mal", ctx };
+  llvm::IRBuilder<> builder { ctx };
+
   while (true) {
     std::cout << "user> ";
 
