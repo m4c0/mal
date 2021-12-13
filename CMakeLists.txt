@@ -31,3 +31,4 @@ function(mal_step NAME FILE)
 endfunction()
 
 mal_step(step0 step0_repl)
+mal_step(step1 step1_read_print)
