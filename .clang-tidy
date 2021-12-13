@@ -1,7 +1,7 @@
 Checks: >-
   *,
   -abseil*,
-  -altera-struct-pack-align,
+  -altera*,
   -fuchsia*,
   -google-build-using-namespace,
   -google-readability-namespace-comments,
