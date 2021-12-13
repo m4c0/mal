@@ -1,7 +1,7 @@
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
+#include "mal/prompt.hpp"
 
-#include <iostream>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
 #include <string>
 
 auto read(const std::string & s) {
@@ -23,11 +23,5 @@ int main() {
   llvm::Module m { "mal", ctx };
   llvm::IRBuilder<> builder { ctx };
 
-  while (true) {
-    std::cout << "user> ";
-
-    for (std::string line; std::getline(std::cin, line);) {
-      std::cout << rep(line) << "\nuser> ";
-    }
-  }
+  mal::prompt::loop(rep);
 }
