@@ -1,11 +1,13 @@
 #pragma once
 
+#include "mal/types.hpp"
+
 #include <string>
 #include <vector>
 
 namespace mal {
   class list {
-    std::vector<std::string> m_data {};
+    std::vector<u_type> m_data {};
 
   public:
     using iterator = decltype(m_data)::const_iterator;
@@ -18,8 +20,8 @@ namespace mal {
     list & operator=(const list &) = delete;
     list & operator=(list &&) noexcept = default;
 
-    list operator+(const char * token) noexcept {
-      m_data.emplace_back(token);
+    list operator+(u_type t) noexcept {
+      m_data.emplace_back(std::move(t));
       return std::move(*this);
     }
 
@@ -28,6 +30,10 @@ namespace mal {
     }
     [[nodiscard]] auto end() const noexcept {
       return m_data.end();
+    }
+
+    [[nodiscard]] auto take() noexcept {
+      return std::move(m_data);
     }
   };
 }
