@@ -1,4 +1,5 @@
 #include "mal/prompt.hpp"
+#include "mal/reader.hpp"
 
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
