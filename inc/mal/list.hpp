@@ -1,16 +1,17 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace mal {
   template<typename T>
   class container {
-    std::vector<T> m_data {};
+    T m_data {};
 
   protected:
-    void emplace_back(T t) noexcept {
-      m_data.emplace_back(std::move(t));
+    [[nodiscard]] constexpr auto & data() noexcept {
+      return m_data;
     }
 
   public:
@@ -36,16 +37,30 @@ namespace mal {
     }
   };
   template<typename T>
-  struct list : public container<T> {
+  struct list : public container<std::vector<T>> {
     list operator+(T t) noexcept {
-      container<T>::emplace_back(std::move(t));
+      this->data().emplace_back(std::move(t));
       return std::move(*this);
     }
   };
+
   template<typename T>
-  struct vector : public container<T> {
+  struct hashmap_entry {
+    std::string key;
+    T value;
+  };
+  template<typename T>
+  struct hashmap : public container<std::unordered_map<std::string, T>> {
+    hashmap operator+(hashmap_entry<T> t) noexcept {
+      this->data().emplace(t.key, std::move(t.value));
+      return std::move(*this);
+    }
+  };
+
+  template<typename T>
+  struct vector : public container<std::vector<T>> {
     vector operator+(T t) noexcept {
-      container<T>::emplace_back(std::move(t));
+      this->data().emplace_back(std::move(t));
       return std::move(*this);
     }
   };

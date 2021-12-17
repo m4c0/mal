@@ -27,13 +27,16 @@ namespace mal {
            | (parser::str & m_vis) | (parser::symbol & m_vis);
     }
     constexpr auto read_list() const noexcept {
-      return parser::list(parser::producer_of<mal::list<rtype>>(), *this) & m_vis;
+      return parser::list(*this) & m_vis;
+    }
+    constexpr auto read_hashmap() const noexcept {
+      return parser::hashmap(*this) & m_vis;
     }
     constexpr auto read_vector() const noexcept {
-      return parser::vector(parser::producer_of<mal::vector<rtype>>(), *this) & m_vis;
+      return parser::vector(*this) & m_vis;
     }
     constexpr auto read_form() const noexcept {
-      return parser::space & (read_atom() | read_list() | read_vector());
+      return parser::space & (read_atom() | read_list() | read_hashmap() | read_vector());
     }
   };
 
