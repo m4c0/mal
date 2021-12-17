@@ -16,6 +16,8 @@
 namespace mal::parser {
   using namespace m4c0::parser;
 
+  class kw {};
+
   static constexpr const auto dquote = skip(match('"'));
   static constexpr const auto qcr = match("\\r") & '\r';
   static constexpr const auto qlf = match("\\n") & '\n';
@@ -28,12 +30,16 @@ namespace mal::parser {
 
   static constexpr const auto lparen = skip(match('('));
   static constexpr const auto rparen = skip(match(')'));
+  static constexpr const auto lsq = skip(match('['));
+  static constexpr const auto rsq = skip(match(']'));
 
   static constexpr const auto space = many(skip(match_any_of(" \t\n\r,")));
   static constexpr const auto tilde_at = skip(match("~@"));
-  static constexpr const auto special = skip(match_any_of("[]{}'`~^@"));
+  static constexpr const auto special = skip(match_any_of("{}'`~^@"));
   static constexpr const auto comment = match(';') & many(skip(match_none_of("\n\r")));
-  static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]")));
+  static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]:")));
+
+  static constexpr const auto keyword = tokenise<kw>(match(':') & other);
 
   static constexpr const auto sign = match('-') & -1 | 1;
   static constexpr const auto number = combine(sign, match_u32(), [](int a, int b) {
@@ -51,5 +57,9 @@ namespace mal::parser {
   template<typename Init, typename Form>
   static constexpr auto list(Init && init, Form && form) {
     return lparen + (init << form) + space + rparen;
+  }
+  template<typename Init, typename Form>
+  static constexpr auto vector(Init && init, Form && form) {
+    return lsq + (init << form) + space + rsq;
   }
 }

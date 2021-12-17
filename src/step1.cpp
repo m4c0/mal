@@ -41,20 +41,27 @@ public:
 struct printer {
   using result_t = no_copy_str;
 
-  result_t operator()(const mal::list<result_t> & items) const noexcept {
+  static result_t print_container(const mal::container<result_t> & items, char l, char r) noexcept {
     std::string s;
     llvm::raw_string_ostream os { s };
-    os << "(";
+    os << l;
     bool first = true;
     for (const auto & item : items) {
       if (!first) os << " ";
       first = false;
       os << *item;
     }
-    os << ")";
+    os << r;
     return result_t { std::move(os.str()) };
   }
-  result_t operator()(mal::parser::token<void> t) const noexcept {
+  result_t operator()(const mal::list<result_t> & items) const noexcept {
+    return print_container(items, '(', ')');
+  }
+  result_t operator()(const mal::vector<result_t> & items) const noexcept {
+    return print_container(items, '[', ']');
+  }
+  template<typename T>
+  result_t operator()(mal::parser::token<T> t) const noexcept {
     return result_t { std::string { t.value.begin(), t.value.length() } };
   }
   result_t operator()(mal::str t) const noexcept {

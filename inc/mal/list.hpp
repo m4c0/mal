@@ -5,24 +5,24 @@
 
 namespace mal {
   template<typename T>
-  class list {
+  class container {
     std::vector<T> m_data {};
+
+  protected:
+    void emplace_back(T t) noexcept {
+      m_data.emplace_back(std::move(t));
+    }
 
   public:
     using iterator = typename decltype(m_data)::const_iterator;
 
-    list() = default;
-    ~list() noexcept = default;
+    container() = default;
+    ~container() noexcept = default;
 
-    list(const list &) = delete;
-    list(list &&) noexcept = default;
-    list & operator=(const list &) = delete;
-    list & operator=(list &&) noexcept = default;
-
-    list operator+(T t) noexcept {
-      m_data.emplace_back(std::move(t));
-      return std::move(*this);
-    }
+    container(const container &) = delete;
+    container(container &&) noexcept = default;
+    container & operator=(const container &) = delete;
+    container & operator=(container &&) noexcept = default;
 
     [[nodiscard]] auto begin() const noexcept {
       return m_data.begin();
@@ -33,6 +33,20 @@ namespace mal {
 
     [[nodiscard]] auto take() noexcept {
       return std::move(m_data);
+    }
+  };
+  template<typename T>
+  struct list : public container<T> {
+    list operator+(T t) noexcept {
+      container<T>::emplace_back(std::move(t));
+      return std::move(*this);
+    }
+  };
+  template<typename T>
+  struct vector : public container<T> {
+    vector operator+(T t) noexcept {
+      container<T>::emplace_back(std::move(t));
+      return std::move(*this);
     }
   };
 }
