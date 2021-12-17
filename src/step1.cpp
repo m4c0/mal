@@ -57,10 +57,30 @@ struct printer {
   result_t operator()(mal::parser::token<void> t) const noexcept {
     return result_t { std::string { t.value.begin(), t.value.length() } };
   }
-  result_t operator()(mal::parser::token<char> t) const noexcept {
+  result_t operator()(mal::str t) const noexcept {
     std::string s;
     llvm::raw_string_ostream os { s };
-    os << '"' << std::string { t.value.begin(), t.value.length() } << '"';
+    os << '"';
+    for (auto c : *t) {
+      switch (c) {
+      case '\r':
+        os << "\\r";
+        break;
+      case '\n':
+        os << "\\n";
+        break;
+      case '\\':
+        os << "\\\\";
+        break;
+      case '\"':
+        os << "\\\"";
+        break;
+      default:
+        os << c;
+        break;
+      }
+    }
+    os << '"';
     return result_t { std::move(os.str()) };
   }
   result_t operator()(bool b) const noexcept {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mal/list.hpp"
+#include "mal/str.hpp"
 #include "mal/types.hpp"
 
 #include <functional>
@@ -16,9 +17,14 @@ namespace mal::parser {
   using namespace m4c0::parser;
 
   static constexpr const auto dquote = skip(match('"'));
-  static constexpr const auto qchar = skip(match('\\') & any_char());
-  static constexpr const auto nonqchar = skip(match_none_of("\\\""));
-  static constexpr const auto str = dquote + tokenise<char>(many(qchar | nonqchar)) + dquote;
+  static constexpr const auto qcr = match("\\r") & '\r';
+  static constexpr const auto qlf = match("\\n") & '\n';
+  static constexpr const auto qq = match("\\\\") & '\\';
+  static constexpr const auto qd = match("\\\"") & '"';
+
+  static constexpr const auto qchar = qcr | qlf | qq | qd;
+  static constexpr const auto nonqchar = match_none_of("\\\"");
+  static constexpr const auto str = dquote + (producer_of<mal::str>() << (qchar | nonqchar)) + dquote;
 
   static constexpr const auto lparen = skip(match('('));
   static constexpr const auto rparen = skip(match(')'));
