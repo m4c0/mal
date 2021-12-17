@@ -18,6 +18,12 @@ namespace mal::parser {
 
   class kw {};
 
+  static constexpr const auto squote = match('\'');
+  static constexpr const auto backtick = match('`');
+  static constexpr const auto tilde = match('~');
+  static constexpr const auto tilde_at = match("~@");
+  static constexpr const auto at = match("@");
+
   static constexpr const auto dquote = skip(match('"'));
   static constexpr const auto qcr = match("\\r") & '\r';
   static constexpr const auto qlf = match("\\n") & '\n';
@@ -39,9 +45,8 @@ namespace mal::parser {
   static constexpr const auto space = many(skip(match_any_of(" \t\n\r,")));
   static constexpr const auto trash = comment | space;
 
-  static constexpr const auto tilde_at = skip(match("~@"));
-  static constexpr const auto special = skip(match_any_of("'`~^@"));
-  static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]:")));
+  static constexpr const auto special = skip(match_any_of("^"));
+  static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]:~@")));
 
   static constexpr const auto keyword = tokenise<kw>(match(':') & other);
 
@@ -50,7 +55,7 @@ namespace mal::parser {
     return a * b;
   });
 
-  static constexpr const auto symbol = tokenise<void>(tilde_at | special | other);
+  static constexpr const auto symbol = tokenise<void>(special | other);
 
   static constexpr const auto b_true = match("true") & true;
   static constexpr const auto b_false = match("false") & false;

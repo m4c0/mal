@@ -26,6 +26,7 @@ namespace mal {
       return (parser::boolean & m_vis) | (parser::keyword & m_vis) | (parser::nill & m_vis) | (parser::number & m_vis)
            | (parser::str & m_vis) | (parser::symbol & m_vis);
     }
+
     constexpr auto read_list() const noexcept {
       return parser::list(*this) & m_vis;
     }
@@ -35,8 +36,26 @@ namespace mal {
     constexpr auto read_vector() const noexcept {
       return parser::vector(*this) & m_vis;
     }
+    constexpr auto read_container() const noexcept {
+      return read_list() | read_hashmap() | read_vector();
+    }
+
+    constexpr auto read_quote(auto p, auto && token) const noexcept {
+      const auto t = parser::token<void> { token };
+      const auto init = parser::producer([v = m_vis, t] {
+        mal::list<rtype> r {};
+        return r + v(t);
+      });
+      return p & (init + *this) & m_vis;
+    }
+    constexpr auto read_rmacro() const noexcept {
+      return read_quote(parser::squote, "quote") | read_quote(parser::backtick, "quasiquote")
+           | read_quote(parser::tilde_at, "splice-unquote") | read_quote(parser::tilde, "unquote")
+           | read_quote(parser::at, "deref");
+    }
+
     constexpr auto read_form() const noexcept {
-      return parser::trash & (read_atom() | read_list() | read_hashmap() | read_vector());
+      return parser::trash & (read_atom() | read_container() | read_rmacro());
     }
   };
 
