@@ -15,9 +15,10 @@
 namespace mal::parser {
   using namespace m4c0::parser;
 
-  static constexpr const auto dquote = match('"');
+  static constexpr const auto dquote = skip(match('"'));
   static constexpr const auto qchar = skip(match('\\') & any_char());
   static constexpr const auto nonqchar = skip(match_none_of("\\\""));
+  static constexpr const auto str = dquote + tokenise<char>(many(qchar | nonqchar)) + dquote;
 
   static constexpr const auto lparen = skip(match('('));
   static constexpr const auto rparen = skip(match(')'));
@@ -25,7 +26,6 @@ namespace mal::parser {
   static constexpr const auto space = many(skip(match_any_of(" \t\n\r,")));
   static constexpr const auto tilde_at = skip(match("~@"));
   static constexpr const auto special = skip(match_any_of("[]{}'`~^@"));
-  static constexpr const auto str = skip(dquote & many(qchar | nonqchar) & dquote);
   static constexpr const auto comment = match(';') & many(skip(match_none_of("\n\r")));
   static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]")));
 
@@ -34,7 +34,13 @@ namespace mal::parser {
     return a * b;
   });
 
-  static constexpr const auto symbol = tokenise<void>(tilde_at | special | str | comment | other);
+  static constexpr const auto symbol = tokenise<void>(tilde_at | special | comment | other);
+
+  static constexpr const auto b_true = match("true") & true;
+  static constexpr const auto b_false = match("false") & false;
+  static constexpr const auto boolean = b_true | b_false;
+
+  static constexpr const auto nill = skip(match("nil"));
 
   template<typename Init, typename Form>
   static constexpr auto list(Init && init, Form && form) {

@@ -23,7 +23,8 @@ namespace mal {
     parser::result<rtype> operator()(parser::input_t in) const noexcept;
 
     constexpr auto read_atom() const noexcept {
-      return (parser::number & m_vis) | (parser::symbol & m_vis);
+      return (parser::boolean & m_vis) | (parser::nill & m_vis) | (parser::number & m_vis) | (parser::str & m_vis)
+           | (parser::symbol & m_vis);
     }
     constexpr auto read_list() const noexcept {
       return parser::list(parser::producer_of<mal::list<rtype>>(), *this) & m_vis;
