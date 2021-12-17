@@ -1,16 +1,15 @@
 #pragma once
 
-#include "mal/types.hpp"
-
 #include <string>
 #include <vector>
 
 namespace mal {
+  template<typename T>
   class list {
-    std::vector<u_type> m_data {};
+    std::vector<T> m_data {};
 
   public:
-    using iterator = decltype(m_data)::const_iterator;
+    using iterator = typename decltype(m_data)::const_iterator;
 
     list() = default;
     ~list() noexcept = default;
@@ -20,7 +19,7 @@ namespace mal {
     list & operator=(const list &) = delete;
     list & operator=(list &&) noexcept = default;
 
-    list operator+(u_type t) noexcept {
+    list operator+(T t) noexcept {
       m_data.emplace_back(std::move(t));
       return std::move(*this);
     }

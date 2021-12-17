@@ -10,23 +10,46 @@
 #include <vector>
 
 namespace mal {
-  struct rec_form {
-    parser::result<u_type> operator()(parser::input_t in) const noexcept;
+  template<typename Visitor>
+  class reader {
+    using rtype = std::invoke_result_t<Visitor, int>;
+
+    Visitor m_vis;
+
+  public:
+    constexpr explicit reader(Visitor v) : m_vis(v) {
+    }
+
+    parser::result<rtype> operator()(parser::input_t in) const noexcept;
+
+    constexpr auto read_atom() const noexcept {
+      return (parser::number & m_vis) | (parser::symbol & m_vis);
+    }
+    constexpr auto read_list() const noexcept {
+      return parser::list(parser::producer_of<mal::list<rtype>>(), *this) & m_vis;
+    }
+    constexpr auto read_form() const noexcept {
+      return parser::space & (read_atom() | read_list());
+    }
   };
 
-  static constexpr const auto read_atom = parser::atom;
-  static constexpr const auto read_list = parser::list(rec_form {});
-  static constexpr const auto read_form = parser::space & (read_list | read_atom);
-
-  inline parser::result<u_type> rec_form::operator()(parser::input_t in) const noexcept {
-    return read_form(in);
+  template<typename Visitor>
+  inline parser::result<typename reader<Visitor>::rtype> reader<Visitor>::operator()(
+      parser::input_t in) const noexcept {
+    const auto p = reader { m_vis }.read_form();
+    return p(in);
   }
 
-  static llvm::Expected<mal::u_type> read_str(const std::string & s) {
-    auto t = read_form({ s.data(), s.length() });
-    return t % [](auto v) noexcept -> llvm::Expected<mal::u_type> {
+  template<typename Visitor>
+  static auto read_str(const std::string & s, Visitor vis) {
+    using rtype = std::invoke_result_t<Visitor, int>;
+
+    auto t = reader { vis }({ s.data(), s.length() });
+    return t % [vis = std::forward<Visitor>(vis)](auto v) noexcept -> llvm::Expected<rtype> {
       if constexpr (std::is_same_v<decltype(v), parser::input_t>) {
-        return llvm::createStringError(llvm::inconvertibleErrorCode(), std::string_view { v.begin(), v.length() });
+        // return "EOF" for all parse errors until we get a real parse error.
+        // this needs a parser rewrite to make "decisive" errors, like unbalanced parenthesis and quotes
+        return llvm::createStringError(llvm::inconvertibleErrorCode(), "EOF");
       } else {
         return v;
       }

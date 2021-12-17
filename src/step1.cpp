@@ -8,41 +8,86 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/TargetSelect.h>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 struct context {
   llvm::LLVMContext ctx {};
   std::unique_ptr<llvm::Module> m = std::make_unique<llvm::Module>("mal", ctx);
 
-  llvm::FunctionType * fn_tp { llvm::FunctionType::get(llvm::Type::getInt8PtrTy(ctx), false) };
-  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::InternalLinkage, "", *m) };
+  llvm::Type * i8p { llvm::Type::getInt8PtrTy(ctx) };
+
   llvm::IRBuilder<> builder { ctx };
 };
-using context_ptr = std::unique_ptr<context>;
 
-auto read(const std::string & s) {
+class no_copy_str {
+  std::string m_value {};
+
+public:
+  no_copy_str() = default;
+  explicit no_copy_str(std::string s) : m_value(std::move(s)) {
+  }
+  ~no_copy_str() = default;
+
+  no_copy_str(const no_copy_str &) = delete;
+  no_copy_str(no_copy_str &&) noexcept = default;
+  no_copy_str & operator=(const no_copy_str &) = delete;
+  no_copy_str & operator=(no_copy_str &&) noexcept = default;
+
+  [[nodiscard]] constexpr auto & operator*() const noexcept {
+    return m_value;
+  }
+};
+struct printer {
+  using result_t = no_copy_str;
+
+  result_t operator()(const mal::list<result_t> & items) const noexcept {
+    std::string s;
+    llvm::raw_string_ostream os { s };
+    os << "(";
+    bool first = true;
+    for (const auto & item : items) {
+      if (!first) os << " ";
+      first = false;
+      os << *item;
+    }
+    os << ")";
+    return result_t { std::move(os.str()) };
+  }
+  result_t operator()(mal::parser::token<void> t) const noexcept {
+    return result_t { std::string { t.value.begin(), t.value.length() } };
+  }
+  result_t operator()(const std::string & v) const noexcept {
+    return result_t { v };
+  }
+  result_t operator()(auto i) const noexcept {
+    return result_t { std::to_string(i) };
+  }
+};
+
+std::string rep(const std::string & s) {
   auto c = std::make_unique<context>();
 
-  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry", c->fn);
+  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
   c->builder.SetInsertPoint(bb);
 
-  c->builder.CreateRet(c->builder.CreateGlobalStringPtr(s));
+  llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
+  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::InternalLinkage, "", *c->m) };
+  c->builder.GetInsertBlock()->insertInto(fn);
 
-  return std::move(c);
-}
-auto eval(context_ptr c) {
-  return c;
-}
-std::string print(context_ptr c) {
+  auto res = mal::read_str(s, printer {});
+  if (!res) {
+    llvm::errs() << res.takeError() << "\n";
+    return "ERROR";
+  }
+  c->builder.CreateRet(c->builder.CreateGlobalStringPtr(*res.get()));
+
   if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
 
-  std::unique_ptr<llvm::ExecutionEngine> ee { llvm::EngineBuilder { std::move(c->m) }.create() };
+  auto * ee = llvm::EngineBuilder { std::move(c->m) }.create();
   if (ee == nullptr) return "Failure creating JIT engine";
 
-  return static_cast<const char *>(ee->runFunction(c->fn, {}).PointerVal); // NOLINT
-}
-
-auto rep(const std::string & s) {
-  return print(eval(read(s)));
+  return static_cast<const char *>(ee->runFunction(fn, {}).PointerVal); // NOLINT
 }
 
 int main() {
