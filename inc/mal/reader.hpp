@@ -54,8 +54,17 @@ namespace mal {
            | read_quote(parser::at, "deref");
     }
 
+    constexpr auto read_meta() const noexcept {
+      const auto t = parser::token<void> { "with-meta" };
+      const auto builder = [v = m_vis, t](auto map, auto vec) {
+        mal::list<rtype> r {};
+        return r + v(t) + std::move(vec) + std::move(map);
+      };
+      return parser::circ & parser::combine(read_hashmap(), parser::trash & read_vector(), builder) & m_vis;
+    }
+
     constexpr auto read_form() const noexcept {
-      return parser::trash & (read_atom() | read_container() | read_rmacro());
+      return parser::trash & (read_atom() | read_container() | read_rmacro() | read_meta());
     }
   };
 
