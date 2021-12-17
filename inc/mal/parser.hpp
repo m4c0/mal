@@ -35,10 +35,12 @@ namespace mal::parser {
   static constexpr const auto lbr = skip(match('{'));
   static constexpr const auto rbr = skip(match('}'));
 
+  static constexpr const auto comment = match(';') & many(skip(match_none_of("\n\r")));
   static constexpr const auto space = many(skip(match_any_of(" \t\n\r,")));
+  static constexpr const auto trash = comment | space;
+
   static constexpr const auto tilde_at = skip(match("~@"));
   static constexpr const auto special = skip(match_any_of("'`~^@"));
-  static constexpr const auto comment = match(';') & many(skip(match_none_of("\n\r")));
   static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]:")));
 
   static constexpr const auto keyword = tokenise<kw>(match(':') & other);
@@ -48,7 +50,7 @@ namespace mal::parser {
     return a * b;
   });
 
-  static constexpr const auto symbol = tokenise<void>(tilde_at | special | comment | other);
+  static constexpr const auto symbol = tokenise<void>(tilde_at | special | other);
 
   static constexpr const auto b_true = match("true") & true;
   static constexpr const auto b_false = match("false") & false;
@@ -59,7 +61,7 @@ namespace mal::parser {
   template<typename Form>
   static constexpr auto list(Form && form) {
     constexpr const auto init = parser::producer_of<mal::list<type_of_t<Form>>>();
-    return lparen + (init << form) + space + rparen;
+    return lparen + (init << form) + trash + rparen;
   }
   template<typename Form>
   static constexpr auto hashmap(Form && form) {
@@ -69,11 +71,11 @@ namespace mal::parser {
       std::string kstr { k.value.begin(), k.value.length() };
       return mal::hashmap_entry<type_of_t<Form>> { kstr, std::forward<decltype(v)>(v) };
     };
-    return lbr + (init << (space & combine(key, form, entry))) + space + rbr;
+    return lbr + (init << (trash & combine(key, form, entry))) + trash + rbr;
   }
   template<typename Form>
   static constexpr auto vector(Form && form) {
     constexpr const auto init = parser::producer_of<mal::vector<type_of_t<Form>>>();
-    return lsq + (init << form) + space + rsq;
+    return lsq + (init << form) + trash + rsq;
   }
 }

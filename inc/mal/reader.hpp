@@ -36,7 +36,7 @@ namespace mal {
       return parser::vector(*this) & m_vis;
     }
     constexpr auto read_form() const noexcept {
-      return parser::space & (read_atom() | read_list() | read_hashmap() | read_vector());
+      return parser::trash & (read_atom() | read_list() | read_hashmap() | read_vector());
     }
   };
 
