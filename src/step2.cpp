@@ -111,6 +111,9 @@ std::string rep(const std::string & s) {
     llvm::errs() << res.takeError() << "\n";
     return "ERROR";
   }
+  if (res.get() == nullptr) {
+    return "Invalid symbol";
+  }
 
   auto * res_tp = res.get()->getType();
 
