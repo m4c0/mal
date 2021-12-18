@@ -32,3 +32,4 @@ endfunction()
 
 mal_step(step0 step0_repl)
 mal_step(step1 step1_read_print)
+mal_step(step2 step2_eval)
