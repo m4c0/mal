@@ -1,4 +1,3 @@
-#include "mal/context.hpp"
 #include "mal/env.hpp"
 #include "mal/prompt.hpp"
 #include "mal/reader.hpp"
@@ -84,9 +83,7 @@ public:
   }
 };
 
-std::string rep(const std::string & s) {
-  auto c = std::make_unique<mal::context>();
-
+std::string rep(std::unique_ptr<mal::context> c, const std::string & s) {
   llvm::PassManagerBuilder pmb;
   pmb.OptLevel = 3;
   pmb.SizeLevel = 0;
@@ -138,10 +135,5 @@ std::string rep(const std::string & s) {
 }
 
 int main() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-
   mal::prompt::loop(rep);
-
-  llvm::llvm_shutdown();
 }

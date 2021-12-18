@@ -6,7 +6,6 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Verifier.h>
-#include <llvm/Support/TargetSelect.h>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -114,9 +113,7 @@ struct printer {
   }
 };
 
-std::string rep(const std::string & s) {
-  auto c = std::make_unique<context>();
-
+std::string rep(std::unique_ptr<mal::context> c, const std::string & s) {
   auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
   c->builder.SetInsertPoint(bb);
 
@@ -140,10 +137,5 @@ std::string rep(const std::string & s) {
 }
 
 int main() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-
   mal::prompt::loop(rep);
-
-  llvm::llvm_shutdown();
 }

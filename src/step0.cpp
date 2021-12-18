@@ -12,43 +12,38 @@ struct context {
   llvm::LLVMContext ctx {};
   std::unique_ptr<llvm::Module> m = std::make_unique<llvm::Module>("mal", ctx);
 
-  llvm::FunctionType * fn_tp { llvm::FunctionType::get(llvm::Type::getInt8PtrTy(ctx), false) };
-  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::InternalLinkage, "", *m) };
   llvm::IRBuilder<> builder { ctx };
 };
 using context_ptr = std::unique_ptr<context>;
 
-auto read(const std::string & s) {
-  auto c = std::make_unique<context>();
-
-  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry", c->fn);
-  c->builder.SetInsertPoint(bb);
-
-  c->builder.CreateRet(c->builder.CreateGlobalStringPtr(s));
-
-  return std::move(c);
+auto read(mal::context * c, const std::string & s) {
+  return c->builder.CreateGlobalStringPtr(s);
 }
-auto eval(context_ptr c) {
+auto eval(auto c) {
   return c;
 }
-std::string print(context_ptr c) {
+auto print(auto c) {
+  return c;
+}
+
+std::string rep(std::unique_ptr<mal::context> c, const std::string & s) {
+  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
+  c->builder.SetInsertPoint(bb);
+
+  llvm::FunctionType * fn_tp { llvm::FunctionType::get(llvm::Type::getInt8PtrTy(c->ctx), false) };
+  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::InternalLinkage, "", *c->m) };
+  c->builder.GetInsertBlock()->insertInto(fn);
+
+  c->builder.CreateRet(print(eval(read(c.get(), s))));
+
   if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
 
   std::unique_ptr<llvm::ExecutionEngine> ee { llvm::EngineBuilder { std::move(c->m) }.create() };
   if (ee == nullptr) return "Failure creating JIT engine";
 
-  return static_cast<const char *>(ee->runFunction(c->fn, {}).PointerVal); // NOLINT
-}
-
-auto rep(const std::string & s) {
-  return print(eval(read(s)));
+  return static_cast<const char *>(ee->runFunction(fn, {}).PointerVal); // NOLINT
 }
 
 int main() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-
   mal::prompt::loop(rep);
-
-  llvm::llvm_shutdown();
 }
