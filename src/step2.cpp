@@ -4,13 +4,6 @@
 
 #include <cstdio>
 #include <iterator>
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/Support/TargetSelect.h>
-#include <llvm/Transforms/IPO.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -58,7 +51,7 @@ public:
   // keyword
   result_t operator()(mal::parser::token<mal::parser::kw> t) const noexcept {
     // TODO: introduce a custom type
-    return m_c->builder.CreateGlobalStringPtr({ t.value.begin(), t.value.length() });
+    return m_c->builder.CreateGlobalStringPtr({ t.value.begin(), t.value.length() }, "", 0, m_c->m.get());
   }
   // symbol
   result_t operator()(mal::parser::token<void> t) const noexcept {
@@ -66,7 +59,7 @@ public:
   }
   // string (unencoded)
   result_t operator()(mal::str t) const noexcept {
-    return m_c->builder.CreateGlobalStringPtr(*t);
+    return m_c->builder.CreateGlobalStringPtr(*t, "", 0, m_c->m.get());
   }
   // boolean (duh)
   result_t operator()(bool b) const noexcept {
@@ -83,55 +76,20 @@ public:
   }
 };
 
-std::string rep(std::unique_ptr<mal::context> c, const std::string & s) {
-  llvm::PassManagerBuilder pmb;
-  pmb.OptLevel = 3;
-  pmb.SizeLevel = 0;
-  pmb.Inliner = llvm::createFunctionInliningPass(3, 0, false);
-  pmb.LoopVectorize = true;
-  pmb.SLPVectorize = true;
-
-  llvm::legacy::FunctionPassManager fpm { c->m.get() };
-  pmb.populateFunctionPassManager(fpm);
-  fpm.doInitialization();
-
-  llvm::legacy::PassManager mpm;
-  pmb.populateModulePassManager(mpm);
-
-  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
-  c->builder.SetInsertPoint(bb);
-
+llvm::Expected<llvm::Value *> rep(mal::context * c, const std::string & s) {
   mal::env e { *c };
 
-  auto res = mal::read_str(s, eval_ast { c.get(), &e });
-  if (!res) {
-    llvm::errs() << res.takeError() << "\n";
-    return "ERROR";
-  }
-  if (res.get() == nullptr) {
-    return "Invalid symbol";
+  auto exp = mal::read_str(s, eval_ast { c, &e });
+  if (exp && exp.get() == nullptr) {
+    return llvm::createStringError(llvm::inconvertibleErrorCode(), "Invalid symbol");
   }
 
-  auto * res_tp = res.get()->getType();
+  auto * res = exp.get();
+  auto * res_tp = res->getType();
 
   llvm::FunctionType * i2s_tp { llvm::FunctionType::get(c->i8p, { res_tp }, false) };
   llvm::Function * i2s_fn { llvm::Function::Create(i2s_tp, llvm::Function::ExternalLinkage, "mal_i2s", *c->m) };
-  c->builder.CreateRet(c->builder.CreateCall(i2s_fn, { res.get() }));
-
-  llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
-  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "mal_main", *c->m) };
-  c->builder.GetInsertBlock()->insertInto(fn);
-
-  if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
-  fpm.run(*fn);
-  mpm.run(*c->m);
-
-  c->m->print(llvm::errs(), nullptr);
-
-  auto * ee = llvm::EngineBuilder { std::move(c->m) }.create();
-  if (ee == nullptr) return "Failure creating JIT engine";
-
-  return static_cast<const char *>(ee->runFunction(fn, {}).PointerVal); // NOLINT
+  return c->builder.CreateCall(i2s_fn, { res });
 }
 
 int main() {

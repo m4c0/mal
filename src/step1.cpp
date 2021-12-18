@@ -113,27 +113,12 @@ struct printer {
   }
 };
 
-std::string rep(std::unique_ptr<mal::context> c, const std::string & s) {
-  auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
-  c->builder.SetInsertPoint(bb);
-
-  llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
-  llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::InternalLinkage, "", *c->m) };
-  c->builder.GetInsertBlock()->insertInto(fn);
-
+llvm::Expected<llvm::Value *> rep(mal::context * c, const std::string & s) {
   auto res = mal::read_str(s, printer {});
   if (!res) {
-    llvm::errs() << res.takeError() << "\n";
-    return "ERROR";
+    return res.takeError();
   }
-  c->builder.CreateRet(c->builder.CreateGlobalStringPtr(*res.get()));
-
-  if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
-
-  auto * ee = llvm::EngineBuilder { std::move(c->m) }.create();
-  if (ee == nullptr) return "Failure creating JIT engine";
-
-  return static_cast<const char *>(ee->runFunction(fn, {}).PointerVal); // NOLINT
+  return c->builder.CreateGlobalStringPtr(*res.get(), "", 0, c->m.get());
 }
 
 int main() {

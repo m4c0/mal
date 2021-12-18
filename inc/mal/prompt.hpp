@@ -3,7 +3,13 @@
 #include "mal/context.hpp"
 
 #include <iostream>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/GenericValue.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/TargetSelect.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <string>
 #include <type_traits>
 
@@ -15,14 +21,52 @@ namespace mal::prompt::impl {
   template<typename Fn>
   static auto run(Fn && rep, const std::string & line) {
     auto c = std::make_unique<context>();
-    return rep(std::move(c), line);
-  }
 
+    auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
+    c->builder.SetInsertPoint(bb);
+
+    auto exp_res = rep(c.get(), line);
+    if (!exp_res) {
+      llvm::errs() << exp_res.takeError() << "\n";
+      return "ERROR";
+    }
+
+    c->builder.CreateRet(exp_res.get());
+
+    llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
+    llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "mal_main", *c->m) };
+    c->builder.GetInsertBlock()->insertInto(fn);
+
+    if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
+
+    llvm::PassManagerBuilder pmb;
+    pmb.OptLevel = 3;
+    pmb.SizeLevel = 0;
+    pmb.Inliner = llvm::createFunctionInliningPass(3, 0, false);
+    pmb.LoopVectorize = true;
+    pmb.SLPVectorize = true;
+
+    llvm::legacy::FunctionPassManager fpm { c->m.get() };
+    pmb.populateFunctionPassManager(fpm);
+    fpm.doInitialization();
+    fpm.run(*fn);
+
+    llvm::legacy::PassManager mpm;
+    pmb.populateModulePassManager(mpm);
+    mpm.run(*c->m);
+
+    c->m->print(llvm::errs(), nullptr);
+
+    auto * ee = llvm::EngineBuilder { std::move(c->m) }.create();
+    if (ee == nullptr) return "Failure creating JIT engine";
+
+    return static_cast<const char *>(ee->runFunction(fn, {}).PointerVal); // NOLINT
+  }
 }
 namespace mal::prompt {
   template<typename Fn>
-  requires std::is_invocable_r_v<std::string, Fn, std::unique_ptr<context>, std::string>
-  static void loop(Fn && rep) {
+  requires std::is_invocable_r_v<llvm::Expected<llvm::Value *>, Fn, context *, std::string> static void loop(
+      Fn && rep) {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
 
