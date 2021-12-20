@@ -22,8 +22,9 @@ namespace mal::prompt::impl {
   static auto run(Fn && rep, const std::string & line) {
     auto c = std::make_unique<context>();
 
-    auto * bb = llvm::BasicBlock::Create(c->ctx, "entry");
-    c->builder.SetInsertPoint(bb);
+    llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
+    llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "mal_main", *c->m) };
+    c->builder.SetInsertPoint(llvm::BasicBlock::Create(c->ctx, "entry", fn));
 
     auto exp_res = rep(c.get(), line);
     if (!exp_res) {
@@ -32,10 +33,6 @@ namespace mal::prompt::impl {
     }
 
     c->builder.CreateRet(exp_res.get());
-
-    llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
-    llvm::Function * fn { llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "mal_main", *c->m) };
-    c->builder.GetInsertBlock()->insertInto(fn);
 
     if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
 
