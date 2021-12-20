@@ -10,35 +10,8 @@
 #include <type_traits>
 #include <utility>
 
-struct context {
-  llvm::LLVMContext ctx {};
-  std::unique_ptr<llvm::Module> m = std::make_unique<llvm::Module>("mal", ctx);
-
-  llvm::Type * i8p { llvm::Type::getInt8PtrTy(ctx) };
-
-  llvm::IRBuilder<> builder { ctx };
-};
-
-class no_copy_str {
-  std::string m_value {};
-
-public:
-  no_copy_str() = default;
-  explicit no_copy_str(std::string s) : m_value(std::move(s)) {
-  }
-  ~no_copy_str() = default;
-
-  no_copy_str(const no_copy_str &) = delete;
-  no_copy_str(no_copy_str &&) noexcept = default;
-  no_copy_str & operator=(const no_copy_str &) = delete;
-  no_copy_str & operator=(no_copy_str &&) noexcept = default;
-
-  [[nodiscard]] constexpr auto & operator*() const noexcept {
-    return m_value;
-  }
-};
 struct printer {
-  using result_t = no_copy_str;
+  using result_t = mal::str;
 
   static result_t print_container(const mal::container<std::vector<result_t>> & items, char l, char r) noexcept {
     std::string s;
