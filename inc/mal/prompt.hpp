@@ -19,7 +19,7 @@ namespace mal::prompt::impl {
     return std::getline(std::cin, line);
   }
   template<typename Fn>
-  static auto run(Fn && rep, const std::string & line) {
+  static auto run(Fn && rep, const std::string & line, int opt_level) {
     auto c = std::make_unique<context>();
 
     llvm::FunctionType * fn_tp { llvm::FunctionType::get(c->i8p, false) };
@@ -37,7 +37,7 @@ namespace mal::prompt::impl {
     if (llvm::verifyModule(*c->m, &llvm::errs())) return "Failed to generate valid code";
 
     llvm::PassManagerBuilder pmb;
-    pmb.OptLevel = 3;
+    pmb.OptLevel = opt_level;
     pmb.SizeLevel = 0;
     pmb.Inliner = llvm::createFunctionInliningPass(3, 0, false);
     pmb.LoopVectorize = true;
@@ -63,13 +63,14 @@ namespace mal::prompt::impl {
 namespace mal::prompt {
   template<typename Fn>
   requires std::is_invocable_r_v<llvm::Expected<llvm::Value *>, Fn, context *, std::string> static void loop(
-      Fn && rep) {
+      Fn && rep,
+      int opt_level = 3) {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
 
     while (std::cin) {
       for (std::string line; impl::read_user_input(line);) {
-        std::cout << impl::run(rep, line) << "\n";
+        std::cout << impl::run(rep, line, opt_level) << "\n";
       }
     }
 
