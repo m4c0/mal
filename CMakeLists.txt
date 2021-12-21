@@ -13,8 +13,21 @@ find_library(CLANG clang HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 find_library(CLANGPP clang-cpp HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 
-function(mal_step NAME FILE)
-  add_executable(${NAME} src/${NAME}.cpp)
+function(mal_cpp_step NAME FILE)
+  add_executable(${NAME} src/cpp/${NAME}.cpp)
+  target_compile_features(${NAME} PRIVATE cxx_std_20)
+  target_include_directories(${NAME} PRIVATE inc)
+  target_link_libraries(${NAME} PRIVATE ${CLANG} ${CLANGPP} ${LLVM})
+
+  add_test(
+    NAME ${NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND runtest.py --deferrable --optional tests/${FILE}.mal -- $<TARGET_FILE:${NAME}>
+    )
+endfunction()
+
+function(mal_llvm_step NAME FILE)
+  add_executable(${NAME} src/llvm/${NAME}.cpp)
   target_compile_features(${NAME} PRIVATE cxx_std_20)
   target_include_directories(${NAME} PRIVATE
     ext/m4c0-stl/parser/inc
@@ -30,6 +43,6 @@ function(mal_step NAME FILE)
     )
 endfunction()
 
-mal_step(step0 step0_repl)
-mal_step(step1 step1_read_print)
-mal_step(step2 step2_eval)
+mal_llvm_step(step0 step0_repl)
+mal_llvm_step(step1 step1_read_print)
+mal_llvm_step(step2 step2_eval)
