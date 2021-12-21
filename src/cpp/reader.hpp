@@ -9,11 +9,34 @@
 namespace mal::types {
   class type;
 
+  class boolean {
+    bool m_v;
+
+  public:
+    constexpr explicit boolean(bool v) noexcept : m_v(v) {
+    }
+
+    [[nodiscard]] constexpr bool operator*() const noexcept {
+      return m_v;
+    }
+  };
+  class number {
+    int m_n;
+
+  public:
+    constexpr explicit number(int n) noexcept : m_n(n) {
+    }
+
+    [[nodiscard]] constexpr int operator*() const noexcept {
+      return m_n;
+    }
+  };
+
   class error {
     std::string m_msg;
 
   public:
-    error() : m_msg { "OK" } {
+    error() : m_msg { "EOF" } {
     }
     explicit error(std::string m) : m_msg { std::move(m) } {
     }
@@ -22,6 +45,7 @@ namespace mal::types {
       return m_msg;
     }
   };
+
   using keyword = parser::token<parser::kw>;
   using nil = parser::nil;
   using string = str;
@@ -31,7 +55,7 @@ namespace mal::types {
   using list = mal::list<type>;
   using vector = mal::vector<type>;
 
-  class type : public std::variant<error, bool, hashmap, int, keyword, list, nil, string, symbol, vector> {
+  class type : public std::variant<error, boolean, hashmap, number, keyword, list, nil, string, symbol, vector> {
   public:
     using variant::variant;
   };
@@ -41,6 +65,12 @@ namespace mal {
 
   class reader {
   public:
+    type operator()(bool b) const noexcept {
+      return { types::boolean { b } };
+    }
+    type operator()(int n) const noexcept {
+      return { types::number { n } };
+    }
     type operator()(auto n) const noexcept {
       return { std::move(n) };
     }

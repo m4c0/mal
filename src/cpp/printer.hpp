@@ -10,8 +10,8 @@ namespace mal {
   static std::string pr_str(const mal::type & v);
 
   struct printer {
-    std::string operator()(bool b) {
-      return b ? "true" : "false";
+    std::string operator()(const types::boolean & b) {
+      return *b ? "true" : "false";
     }
 
     std::string operator()(const types::error & e) {
@@ -59,12 +59,38 @@ namespace mal {
       return { "nil" };
     }
 
+    std::string operator()(const types::number & n) {
+      return std::to_string(*n);
+    }
+
     std::string operator()(const types::symbol & sym) {
       return { sym.value.begin(), sym.value.end() };
     }
 
     std::string operator()(const types::string & s) {
-      return { *s };
+      std::ostringstream os;
+      os << '"';
+      for (char c : *s) {
+        switch (c) {
+        case '"':
+          os << "\\\"";
+          break;
+        case '\n':
+          os << "\\n";
+          break;
+        case '\r':
+          os << "\\r";
+          break;
+        case '\\':
+          os << "\\\\";
+          break;
+        default:
+          os << c;
+          break;
+        }
+      }
+      os << '"';
+      return os.str();
     }
 
     std::string operator()(const types::vector & h) {
