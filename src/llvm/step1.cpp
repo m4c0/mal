@@ -87,8 +87,7 @@ struct printer {
 };
 
 llvm::Expected<llvm::Value *> rep(mal::context * c, const std::string & s) {
-  auto rr = mal::read_str(s, read_str_vis { c });
-  auto res = mal::read_str(s, printer {});
+  auto res = mal::parser::read_str(s, printer {});
   if (!res) {
     return llvm::createStringError(llvm::inconvertibleErrorCode(), "EOF");
   }
