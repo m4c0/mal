@@ -3,7 +3,7 @@
 #include "mal/parser.hpp"
 #include "mal/types.hpp"
 
-#include <llvm/Support/Error.h>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -80,11 +80,9 @@ namespace mal {
     using rtype = std::invoke_result_t<Visitor, int>;
 
     auto t = reader { vis }({ s.data(), s.length() });
-    return t % [vis = std::forward<Visitor>(vis)](auto v) noexcept -> llvm::Expected<rtype> {
+    return t % [vis = std::forward<Visitor>(vis)](auto v) noexcept -> std::optional<rtype> {
       if constexpr (std::is_same_v<decltype(v), parser::input_t>) {
-        // return "EOF" for all parse errors until we get a real parse error.
-        // this needs a parser rewrite to make "decisive" errors, like unbalanced parenthesis and quotes
-        return llvm::createStringError(llvm::inconvertibleErrorCode(), "EOF");
+        return {};
       } else {
         return v;
       }

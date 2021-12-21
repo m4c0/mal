@@ -87,11 +87,12 @@ struct printer {
 };
 
 llvm::Expected<llvm::Value *> rep(mal::context * c, const std::string & s) {
+  auto rr = mal::read_str(s, read_str_vis { c });
   auto res = mal::read_str(s, printer {});
   if (!res) {
-    return res.takeError();
+    return llvm::createStringError(llvm::inconvertibleErrorCode(), "EOF");
   }
-  return c->builder.CreateGlobalStringPtr(*res.get(), "", 0, c->m.get());
+  return c->builder.CreateGlobalStringPtr(**res, "", 0, c->m.get());
 }
 
 int main() {

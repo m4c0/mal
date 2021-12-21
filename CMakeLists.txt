@@ -18,6 +18,9 @@ function(mal_step LANG NAME FILE)
 
   add_executable(${TARGET} src/${LANG}/${NAME}.cpp)
   target_compile_features(${TARGET} PRIVATE cxx_std_20)
+  target_include_directories(${TARGET} PRIVATE
+    ext/m4c0-stl/parser/inc
+    inc)
 
   add_test(
     NAME ${TARGET}
@@ -33,11 +36,7 @@ endfunction()
 function(mal_llvm_step NAME FILE)
   set(TARGET "llvm.${NAME}")
   mal_step("llvm" ${NAME} ${FILE})
-  target_include_directories(${TARGET} PRIVATE
-    ext/m4c0-stl/parser/inc
-    inc
-    ${LLVM_INCLUDE_DIR}
-    )
+  target_include_directories(${TARGET} PRIVATE ${LLVM_INCLUDE_DIR})
   target_link_libraries(${TARGET} PRIVATE ${CLANG} ${CLANGPP} ${LLVM})
 endfunction()
 

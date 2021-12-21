@@ -80,11 +80,11 @@ llvm::Expected<llvm::Value *> rep(mal::context * c, const std::string & s) {
   mal::env e { *c };
 
   auto exp = mal::read_str(s, eval_ast { c, &e });
-  if (exp && exp.get() == nullptr) {
+  if (exp && *exp == nullptr) {
     return llvm::createStringError(llvm::inconvertibleErrorCode(), "Invalid symbol");
   }
 
-  auto * res = exp.get();
+  auto * res = *exp;
   auto * res_tp = res->getType();
 
   llvm::FunctionType * i2s_tp { llvm::FunctionType::get(c->i8p, { res_tp }, false) };
