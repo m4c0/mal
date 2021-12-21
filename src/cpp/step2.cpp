@@ -1,3 +1,4 @@
+#include "mal/list.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
 
@@ -67,6 +68,17 @@ public:
   constexpr explicit eval_ast(env * e) noexcept : m_e { e } {
   }
 
+  mal::type operator()(mal::types::hashmap in) {
+    mal::types::hashmap out;
+    for (auto & v : in.take()) {
+      auto nv = EVAL(std::move(v.second), m_e);
+      if (std::holds_alternative<mal::types::error>(nv)) return nv;
+
+      out = out + mal::hashmap_entry<mal::type> { v.first, std::move(nv) };
+    }
+    return std::move(out);
+  }
+
   mal::type operator()(mal::types::list in) {
     mal::types::list out;
     for (auto & v : in.take()) {
@@ -77,9 +89,22 @@ public:
     }
     return std::move(out);
   }
+
+  mal::type operator()(mal::types::vector in) {
+    mal::types::vector out;
+    for (auto & v : in.take()) {
+      auto nv = EVAL(std::move(v), m_e);
+      if (std::holds_alternative<mal::types::error>(nv)) return nv;
+
+      out = out + std::move(nv);
+    }
+    return std::move(out);
+  }
+
   mal::type operator()(mal::types::symbol in) {
     return m_e->lookup(in);
   }
+
   mal::type operator()(auto in) {
     return std::move(in);
   }
