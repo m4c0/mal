@@ -39,6 +39,10 @@ namespace mal {
       return { kw.value.begin(), kw.value.end() };
     }
 
+    std::string operator()(const types::lambda & /*l*/) {
+      return "#<function>";
+    }
+
     std::string operator()(const types::list & h) {
       std::ostringstream os;
       os << "(";

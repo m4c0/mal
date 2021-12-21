@@ -3,6 +3,8 @@
 #include "mal/reader.hpp"
 #include "mal/str.hpp"
 
+#include <functional>
+#include <span>
 #include <utility>
 #include <variant>
 
@@ -46,6 +48,18 @@ namespace mal::types {
     }
   };
 
+  class lambda {
+    std::function<type(std::span<type>)> m_fn;
+
+  public:
+    explicit lambda(decltype(m_fn) f) : m_fn(std::move(f)) {
+    }
+
+    [[nodiscard]] constexpr auto & operator*() noexcept {
+      return m_fn;
+    }
+  };
+
   using keyword = parser::token<parser::kw>;
   using nil = parser::nil;
   using string = str;
@@ -55,7 +69,8 @@ namespace mal::types {
   using list = mal::list<type>;
   using vector = mal::vector<type>;
 
-  class type : public std::variant<error, boolean, hashmap, number, keyword, list, nil, string, symbol, vector> {
+  class type
+    : public std::variant<error, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> {
   public:
     using variant::variant;
   };
