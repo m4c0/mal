@@ -1,3 +1,4 @@
+#include "printer.hpp"
 #include "reader.hpp"
 
 #include <iostream>
@@ -10,7 +11,7 @@ static auto EVAL(auto in) {
   return in;
 }
 static auto PRINT(auto in) {
-  return in;
+  return mal::pr_str(in);
 }
 
 static auto rep(auto in) {
