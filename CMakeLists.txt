@@ -45,3 +45,4 @@ mal_llvm_step(step1 step1_read_print)
 mal_llvm_step(step2 step2_eval)
 
 mal_cpp_step(step0 step0_repl)
+mal_cpp_step(step1 step1_read_print)

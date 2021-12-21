@@ -1,8 +1,10 @@
+#include "reader.hpp"
+
 #include <iostream>
 #include <string>
 
 static auto READ(auto in) {
-  return in;
+  return mal::read_str(in);
 }
 static auto EVAL(auto in) {
   return in;
