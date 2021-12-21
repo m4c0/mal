@@ -2,7 +2,6 @@
 
 #include "mal/list.hpp"
 #include "mal/str.hpp"
-#include "mal/types.hpp"
 
 #include <functional>
 #include <m4c0/parser/combiners.hpp>

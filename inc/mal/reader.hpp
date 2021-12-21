@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mal/parser.hpp"
-#include "mal/types.hpp"
 
 #include <optional>
 #include <string>
