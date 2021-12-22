@@ -83,6 +83,12 @@ namespace mal::types {
       return std::visit(std::forward<Visitor>(v), m_value);
     }
 
+    [[nodiscard]] bool to_boolean() const noexcept {
+      if (const auto * v = std::get_if<boolean>(&m_value)) {
+        return **v;
+      }
+      return !is<nil>();
+    }
     [[nodiscard]] int to_int() const noexcept {
       if (const auto * v = std::get_if<number>(&m_value)) {
         return **v;
@@ -99,5 +105,4 @@ namespace mal::types {
 }
 namespace mal {
   using type = types::type;
-
 }

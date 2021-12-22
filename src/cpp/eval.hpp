@@ -44,13 +44,30 @@ namespace mal {
 
       return list[2].visit(new_eval);
     }
-    [[nodiscard]] type doit(const types::list & in) const noexcept {
+    [[nodiscard]] type do_(const types::list & in) const noexcept {
       const auto & list = (*in).peek();
       for (auto it = list.begin() + 1; it != list.end() - 1; ++it) {
         auto r = it->visit(*this);
         if (r.is_error()) return r;
       }
       return list.back().visit(*this);
+    }
+    [[nodiscard]] type if_(const types::list & in) const noexcept {
+      const auto & list = (*in).peek();
+      if (list.size() < 3 || list.size() > 4) {
+        return types::error { "if must have condition, true and optionally false" };
+      }
+
+      auto res = list[1].visit(*this);
+      if (res.is_error()) return res;
+
+      if (res.to_boolean()) {
+        return list[2].visit(*this);
+      }
+      if (list.size() == 3) {
+        return types::nil {};
+      }
+      return list[3].visit(*this);
     }
 
   public:
@@ -63,7 +80,8 @@ namespace mal {
       auto first = (*in).begin()->to_symbol();
       if (first == "def!") return def(in);
       if (first == "let*") return let(in);
-      if (first == "do") return doit(in);
+      if (first == "do") return do_(in);
+      if (first == "if") return if_(in);
 
       auto evald = eval_ast<eval> { m_e }(in);
       if (evald.is_error()) return evald;
