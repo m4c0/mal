@@ -6,7 +6,7 @@
 
 namespace mal {
   class env {
-    std::unordered_map<std::string, types::lambda> m_data {};
+    std::unordered_map<std::string, type> m_data {};
     env * m_outer {};
 
   public:
@@ -14,16 +14,19 @@ namespace mal {
     explicit env(env * outer) noexcept : m_outer(outer) {
     }
 
-    void emplace(const std::string & key, mal::types::lambda l) noexcept {
-      m_data.emplace(key, l);
+    [[nodiscard]] type get(const std::string & key) const noexcept {
+      auto it = m_data.find(key);
+      if (it != m_data.end()) return it->second;
+      if (m_outer == nullptr) return types::error { "Symbol not found" };
+      return m_outer->get(key);
     }
 
-    [[nodiscard]] mal::type lookup(mal::types::symbol s) const noexcept {
-      auto it = m_data.find(std::string { s.value.begin(), s.value.end() });
-      if (it == m_data.end()) {
-        return types::error { "Symbol not found" };
-      }
-      return it->second;
+    void set(const std::string & key, type val) noexcept {
+      m_data.emplace(key, val);
+    }
+
+    [[nodiscard]] type lookup(types::symbol s) const noexcept {
+      return get(std::string { s.value.begin(), s.value.end() });
     }
   };
 }

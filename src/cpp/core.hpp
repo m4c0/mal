@@ -19,9 +19,9 @@ namespace mal::core {
   }
 
   static void setup_step2_funcs(auto & e) {
-    e.emplace("+", types::lambda { int_bifunc(std::plus<>()) });
-    e.emplace("-", types::lambda { int_bifunc(std::minus<>()) });
-    e.emplace("*", types::lambda { int_bifunc(std::multiplies<>()) });
-    e.emplace("/", types::lambda { int_bifunc(std::divides<>()) });
+    e.set("+", types::lambda { int_bifunc(std::plus<>()) });
+    e.set("-", types::lambda { int_bifunc(std::minus<>()) });
+    e.set("*", types::lambda { int_bifunc(std::multiplies<>()) });
+    e.set("/", types::lambda { int_bifunc(std::divides<>()) });
   }
 }
