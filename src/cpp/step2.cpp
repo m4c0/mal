@@ -1,3 +1,4 @@
+#include "core.hpp"
 #include "env.hpp"
 #include "eval_ast.hpp"
 #include "mal/list.hpp"
@@ -5,31 +6,7 @@
 #include "reader.hpp"
 
 #include <iostream>
-#include <numeric>
 #include <string>
-
-template<typename Op>
-[[nodiscard]] static mal::type oper(std::span<mal::type> args, Op && op) {
-  if (args.size() < 2) return mal::types::error { "Operation requires at least two operands" };
-
-  int i = mal::to_int(args[0]);
-  int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
-    return op(a, mal::to_int(b));
-  });
-  return mal::types::number { res };
-}
-[[nodiscard]] static mal::type divides(std::span<mal::type> args) {
-  return oper(args, std::divides<>());
-}
-[[nodiscard]] static mal::type minus(std::span<mal::type> args) {
-  return oper(args, std::minus<>());
-}
-[[nodiscard]] static mal::type multiplies(std::span<mal::type> args) {
-  return oper(args, std::multiplies<>());
-}
-[[nodiscard]] static mal::type plus(std::span<mal::type> args) {
-  return oper(args, std::plus<>());
-}
 
 class eval {
   mal::env * m_e;
@@ -68,10 +45,7 @@ static auto PRINT(auto in) {
 
 static auto rep(auto in) {
   mal::env e;
-  e.emplace("+", mal::types::lambda { plus });
-  e.emplace("-", mal::types::lambda { minus });
-  e.emplace("*", mal::types::lambda { multiplies });
-  e.emplace("/", mal::types::lambda { divides });
+  mal::core::setup_step2_funcs(e);
 
   return PRINT(EVAL(READ(in), &e));
 }
