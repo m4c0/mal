@@ -1,5 +1,6 @@
 #include "core.hpp"
 #include "env.hpp"
+#include "eval.hpp"
 #include "eval_ast.hpp"
 #include "mal/list.hpp"
 #include "printer.hpp"
@@ -8,29 +9,8 @@
 #include <iostream>
 #include <string>
 
-class eval {
-  mal::env * m_e;
-
-public:
-  constexpr explicit eval(mal::env * e) noexcept : m_e { e } {
-  }
-
-  mal::type operator()(mal::types::list in) {
-    if (in.begin() == in.end()) return std::move(in);
-
-    auto evald = mal::eval_ast<eval> { m_e }(std::move(in));
-    if (evald.is_error()) return evald;
-
-    auto list = std::get<mal::types::list>(evald).take();
-
-    auto oper = std::get<mal::types::lambda>(list.at(0));
-    auto args = std::span(list).subspan<1>();
-    return (*oper)(args);
-  }
-
-  mal::type operator()(auto in) {
-    return mal::eval_ast<eval> { m_e }(std::move(in));
-  }
+struct eval : public mal::eval::base<eval> {
+  using base::base;
 };
 
 static auto READ(auto in) {
