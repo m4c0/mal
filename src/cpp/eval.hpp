@@ -81,6 +81,8 @@ namespace mal {
         auto e = std::make_shared<env>(oe);
 
         auto params = (*list[1].as<types::list>()).peek();
+        if (params.size() != args.size()) return types::error { "fn* argument list differs in size from actual call" };
+
         auto body = list[2];
 
         for (int i = 0; i < params.size(); i++) {
