@@ -24,17 +24,20 @@ namespace mal {
 
       const auto & list = (*in).peek();
       if (list.size() != 3) return types::error { "let* must have an env and an expression" };
-      if (!list[1].is<types::list>()) return types::error { "let* env must be a list" };
 
-      const auto & e = (*list[1].as<types::list>()).peek();
-      if (e.size() % 2 == 1) return types::error { "let* env must have a balanced list of key and values" };
+      const std::vector<type> * e {};
+      if (list[1].is<types::list>()) e = &(*list[1].as<types::list>()).peek();
+      if (list[1].is<types::vector>()) e = &(*list[1].as<types::vector>()).peek();
+      if (e == nullptr) return types::error { "let* env must be a list" };
+
+      if (e->size() % 2 == 1) return types::error { "let* env must have a balanced list of key and values" };
 
       eval new_eval { &inner };
-      for (int i = 0; i < e.size(); i += 2) {
-        auto key = e[i].to_symbol();
+      for (int i = 0; i < e->size(); i += 2) {
+        auto key = e->at(i).to_symbol();
         if (key.empty()) return types::error { "let* env can only have symbol as keys" };
 
-        auto value = e[i + 1].visit(new_eval);
+        auto value = e->at(i + 1).visit(new_eval);
         inner.set(key, value);
       }
 
