@@ -9,15 +9,11 @@
 #include <iostream>
 #include <string>
 
-struct eval : public mal::eval::base<eval> {
-  using base::base;
-};
-
 static auto READ(auto in) {
   return mal::read_str(in);
 }
 static mal::type EVAL(const mal::type & in, mal::env * e) {
-  return in.visit(eval { e });
+  return in.visit(mal::eval { e });
 }
 static auto PRINT(auto in) {
   return mal::pr_str(in);

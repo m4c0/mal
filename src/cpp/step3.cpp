@@ -9,25 +9,18 @@
 #include <iostream>
 #include <string>
 
-struct eval : public mal::eval::base<eval> {
-  using base::base;
-};
-
 static auto READ(auto in) {
   return mal::read_str(in);
 }
 static mal::type EVAL(const mal::type & in, mal::env * e) {
-  return in.visit(eval { e });
+  return in.visit(mal::eval { e });
 }
 static auto PRINT(auto in) {
   return mal::pr_str(in);
 }
 
-static auto rep(auto in) {
-  mal::env e;
-  mal::core::setup_step2_funcs(e);
-
-  return PRINT(EVAL(READ(in), &e));
+static auto rep(auto in, auto e) {
+  return PRINT(EVAL(READ(in), e));
 }
 
 static auto readline(std::string & line) {
@@ -36,8 +29,11 @@ static auto readline(std::string & line) {
   return static_cast<bool>(std::getline(std::cin, line));
 }
 int main() {
+  mal::env e;
+  mal::core::setup_step2_funcs(e);
+
   std::string line;
   while (readline(line)) {
-    std::cout << rep(line) << "\n";
+    std::cout << rep(line, &e) << "\n";
   }
 }

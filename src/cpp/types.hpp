@@ -84,6 +84,12 @@ namespace mal::types {
       }
       return 0;
     }
+    [[nodiscard]] std::string to_symbol() const noexcept {
+      if (const auto * v = std::get_if<symbol>(&m_value)) {
+        return { (*v).value.begin(), (*v).value.end() };
+      }
+      return 0;
+    }
   };
 }
 namespace mal {
