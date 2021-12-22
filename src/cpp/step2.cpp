@@ -42,7 +42,7 @@ public:
     if (in.begin() == in.end()) return std::move(in);
 
     auto evald = mal::eval_ast<eval> { m_e }(std::move(in));
-    if (std::holds_alternative<mal::types::error>(evald)) return evald;
+    if (evald.is_error()) return evald;
 
     auto list = std::get<mal::types::list>(evald).take();
 
@@ -60,7 +60,7 @@ static auto READ(auto in) {
   return mal::read_str(in);
 }
 static mal::type EVAL(mal::type in, mal::env * e) {
-  return std::visit(eval { e }, std::move(in));
+  return in.visit(eval { e });
 }
 static auto PRINT(auto in) {
   return mal::pr_str(in);

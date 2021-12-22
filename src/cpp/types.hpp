@@ -73,6 +73,15 @@ namespace mal::types {
     : public std::variant<error, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> {
   public:
     using variant::variant;
+
+    [[nodiscard]] constexpr bool is_error() const noexcept {
+      return std::holds_alternative<error>(*this);
+    }
+
+    template<typename Visitor>
+    [[nodiscard]] auto visit(Visitor && v) noexcept {
+      return std::visit(std::forward<Visitor>(v), std::move(*this));
+    }
   };
 }
 namespace mal {

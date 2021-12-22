@@ -4,12 +4,11 @@
 
 #include <concepts>
 #include <type_traits>
-#include <variant>
 
 namespace mal {
   template<typename E>
   concept can_eval = requires(E e, mal::type t) {
-    { std::visit(e, std::move(t)) } -> std::same_as<type>;
+    { t.visit(e) } -> std::same_as<type>;
   };
 
   template<can_eval EVAL>
@@ -23,8 +22,8 @@ namespace mal {
     type operator()(types::hashmap in) {
       types::hashmap out;
       for (auto & v : in.take()) {
-        auto nv = std::visit(EVAL { m_e }, std::move(v.second));
-        if (std::holds_alternative<types::error>(nv)) return nv;
+        auto nv = v.second.visit(EVAL { m_e });
+        if (nv.is_error()) return nv;
 
         out = out + hashmap_entry<type> { v.first, std::move(nv) };
       }
@@ -34,8 +33,8 @@ namespace mal {
     type operator()(types::list in) {
       types::list out;
       for (auto & v : in.take()) {
-        auto nv = std::visit(EVAL { m_e }, std::move(v));
-        if (std::holds_alternative<types::error>(nv)) return nv;
+        auto nv = v.visit(EVAL { m_e });
+        if (nv.is_error()) return nv;
 
         out = out + std::move(nv);
       }
@@ -45,8 +44,8 @@ namespace mal {
     type operator()(types::vector in) {
       types::vector out;
       for (auto & v : in.take()) {
-        auto nv = std::visit(EVAL { m_e }, std::move(v));
-        if (std::holds_alternative<types::error>(nv)) return nv;
+        auto nv = v.visit(EVAL { m_e });
+        if (nv.is_error()) return nv;
 
         out = out + std::move(nv);
       }
