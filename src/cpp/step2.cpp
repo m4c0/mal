@@ -1,13 +1,12 @@
 #include "env.hpp"
+#include "eval_ast.hpp"
 #include "mal/list.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
 
 #include <iostream>
-#include <iterator>
 #include <numeric>
 #include <string>
-#include <variant>
 
 template<typename Op>
 [[nodiscard]] static mal::type oper(std::span<mal::type> args, Op && op) {
@@ -32,56 +31,6 @@ template<typename Op>
   return oper(args, std::plus<>());
 }
 
-static mal::type EVAL(mal::type in, mal::env * e);
-
-class eval_ast {
-  mal::env * m_e;
-
-public:
-  constexpr explicit eval_ast(mal::env * e) noexcept : m_e { e } {
-  }
-
-  mal::type operator()(mal::types::hashmap in) {
-    mal::types::hashmap out;
-    for (auto & v : in.take()) {
-      auto nv = EVAL(std::move(v.second), m_e);
-      if (std::holds_alternative<mal::types::error>(nv)) return nv;
-
-      out = out + mal::hashmap_entry<mal::type> { v.first, std::move(nv) };
-    }
-    return std::move(out);
-  }
-
-  mal::type operator()(mal::types::list in) {
-    mal::types::list out;
-    for (auto & v : in.take()) {
-      auto nv = EVAL(std::move(v), m_e);
-      if (std::holds_alternative<mal::types::error>(nv)) return nv;
-
-      out = out + std::move(nv);
-    }
-    return std::move(out);
-  }
-
-  mal::type operator()(mal::types::vector in) {
-    mal::types::vector out;
-    for (auto & v : in.take()) {
-      auto nv = EVAL(std::move(v), m_e);
-      if (std::holds_alternative<mal::types::error>(nv)) return nv;
-
-      out = out + std::move(nv);
-    }
-    return std::move(out);
-  }
-
-  mal::type operator()(mal::types::symbol in) {
-    return m_e->lookup(in);
-  }
-
-  mal::type operator()(auto in) {
-    return std::move(in);
-  }
-};
 class eval {
   mal::env * m_e;
 
@@ -92,7 +41,7 @@ public:
   mal::type operator()(mal::types::list in) {
     if (in.begin() == in.end()) return std::move(in);
 
-    auto evald = eval_ast { m_e }(std::move(in));
+    auto evald = mal::eval_ast<eval> { m_e }(std::move(in));
     if (std::holds_alternative<mal::types::error>(evald)) return evald;
 
     auto list = std::get<mal::types::list>(evald).take();
@@ -101,8 +50,9 @@ public:
     auto args = std::span(list).subspan<1>();
     return (*oper)(args);
   }
+
   mal::type operator()(auto in) {
-    return eval_ast { m_e }(std::move(in));
+    return mal::eval_ast<eval> { m_e }(std::move(in));
   }
 };
 
