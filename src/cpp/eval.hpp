@@ -4,9 +4,11 @@
 #include "eval_ast.hpp"
 #include "types.hpp"
 
+#include <utility>
+
 namespace mal {
   class eval {
-    env * m_e;
+    std::shared_ptr<env> m_e;
 
     [[nodiscard]] type def(const types::list & in) const noexcept {
       const auto & list = (*in).peek();
@@ -20,7 +22,7 @@ namespace mal {
       return value;
     }
     [[nodiscard]] type let(const types::list & in) const noexcept {
-      env inner { m_e };
+      auto inner = std::make_shared<env>(m_e);
 
       const auto & list = (*in).peek();
       if (list.size() != 3) return types::error { "let* must have an env and an expression" };
@@ -32,14 +34,14 @@ namespace mal {
 
       if (e->size() % 2 == 1) return types::error { "let* env must have a balanced list of key and values" };
 
-      eval new_eval { &inner };
+      eval new_eval { inner };
       for (int i = 0; i < e->size(); i += 2) {
         auto key = e->at(i).to_symbol();
         if (key.empty()) return types::error { "let* env can only have symbol as keys" };
 
         auto value = e->at(i + 1).visit(new_eval);
         if (value.is_error()) return value;
-        inner.set(key, value);
+        inner->set(key, value);
       }
 
       return list[2].visit(new_eval);
@@ -69,9 +71,31 @@ namespace mal {
       }
       return list[3].visit(*this);
     }
+    [[nodiscard]] type fn(const types::list & in) const noexcept {
+      const auto & list = (*in).peek();
+      if (list.size() != 3) return types::error { "fn* must have parameters and body" };
+
+      if (!list[1].is<types::list>()) return types::error { "fn* first arg must be a parameter list" };
+
+      const auto l = [oe = m_e, list](std::span<const type> args) noexcept -> type {
+        auto e = std::make_shared<env>(oe);
+
+        auto params = (*list[1].as<types::list>()).peek();
+        auto body = list[2];
+
+        for (int i = 0; i < params.size(); i++) {
+          auto p = params[i].to_symbol();
+          if (p.empty()) return types::error { "fn* without a symbol parameter" };
+          if (args[i].is_error()) return args[i];
+          e->set(p, args[i]);
+        }
+        return body.visit(eval { e });
+      };
+      return types::lambda { l };
+    }
 
   public:
-    constexpr explicit eval(env * e) noexcept : m_e { e } {
+    explicit eval(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
     }
 
     type operator()(const types::list & in) const noexcept {
@@ -82,6 +106,7 @@ namespace mal {
       if (first == "let*") return let(in);
       if (first == "do") return do_(in);
       if (first == "if") return if_(in);
+      if (first == "fn*") return fn(in);
 
       auto evald = eval_ast<eval> { m_e }(in);
       if (evald.is_error()) return evald;

@@ -103,29 +103,29 @@ namespace mal::core {
   }
 
   static void setup_step2_funcs(auto & e) {
-    e.set("+", types::lambda { details::int_bifunc(std::plus<>()) });
-    e.set("-", types::lambda { details::int_bifunc(std::minus<>()) });
-    e.set("*", types::lambda { details::int_bifunc(std::multiplies<>()) });
-    e.set("/", types::lambda { details::int_bifunc(std::divides<>()) });
+    e->set("+", types::lambda { details::int_bifunc(std::plus<>()) });
+    e->set("-", types::lambda { details::int_bifunc(std::minus<>()) });
+    e->set("*", types::lambda { details::int_bifunc(std::multiplies<>()) });
+    e->set("/", types::lambda { details::int_bifunc(std::divides<>()) });
   }
 
   static void setup_step4_funcs(auto & e) {
     setup_step2_funcs(e);
-    e.set("list", types::lambda { list });
-    e.set("list?", types::lambda { is_list });
-    e.set("empty?", types::lambda { is_empty });
-    e.set("count", types::lambda { count });
+    e->set("list", types::lambda { list });
+    e->set("list?", types::lambda { is_list });
+    e->set("empty?", types::lambda { is_empty });
+    e->set("count", types::lambda { count });
 
-    e.set("=", types::lambda { equal });
+    e->set("=", types::lambda { equal });
 
-    e.set("<", types::lambda { details::bool_bifunc(std::less<>()) });
-    e.set("<=", types::lambda { details::bool_bifunc(std::less_equal<>()) });
-    e.set(">", types::lambda { details::bool_bifunc(std::greater<>()) });
-    e.set(">=", types::lambda { details::bool_bifunc(std::greater_equal<>()) });
+    e->set("<", types::lambda { details::bool_bifunc(std::less<>()) });
+    e->set("<=", types::lambda { details::bool_bifunc(std::less_equal<>()) });
+    e->set(">", types::lambda { details::bool_bifunc(std::greater<>()) });
+    e->set(">=", types::lambda { details::bool_bifunc(std::greater_equal<>()) });
 
-    e.set("pr-str", types::lambda { pr_str });
-    e.set("str", types::lambda { str });
-    e.set("prn", types::lambda { details::cout_pr_str(true) });
-    e.set("println", types::lambda { details::cout_pr_str(false) });
+    e->set("pr-str", types::lambda { pr_str });
+    e->set("str", types::lambda { str });
+    e->set("prn", types::lambda { details::cout_pr_str(true) });
+    e->set("println", types::lambda { details::cout_pr_str(false) });
   }
 }

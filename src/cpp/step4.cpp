@@ -12,7 +12,7 @@
 static auto READ(auto in) {
   return mal::read_str(in);
 }
-static mal::type EVAL(const mal::type & in, mal::env * e) {
+static mal::type EVAL(const mal::type & in, auto e) {
   return in.visit(mal::eval { e });
 }
 static auto PRINT(auto in) {
@@ -29,11 +29,11 @@ static auto readline(std::string & line) {
   return static_cast<bool>(std::getline(std::cin, line));
 }
 int main() {
-  mal::env e;
+  auto e = std::make_shared<mal::env>();
   mal::core::setup_step4_funcs(e);
 
   std::string line;
   while (readline(line)) {
-    std::cout << rep(line, &e) << "\n";
+    std::cout << rep(line, e) << "\n";
   }
 }

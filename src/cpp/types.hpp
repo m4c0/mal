@@ -57,7 +57,7 @@ namespace mal::types {
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = parser::token<parser::kw>;
-  using lambda = details::holder<std::function<type(std::span<const type>)>>;
+  using lambda = details::heavy_holder<std::function<type(std::span<const type>)>>;
   using list = details::heavy_holder<mal::list<type>>;
   using nil = parser::nil;
   using number = details::holder<int>;

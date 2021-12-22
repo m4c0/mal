@@ -8,11 +8,11 @@
 namespace mal {
   class env {
     std::unordered_map<std::string, type> m_data {};
-    env * m_outer {};
+    std::shared_ptr<const env> m_outer {};
 
   public:
     env() = default;
-    explicit env(env * outer) noexcept : m_outer(outer) {
+    explicit env(std::shared_ptr<const env> outer) noexcept : m_outer(std::move(outer)) {
     }
 
     [[nodiscard]] type get(const std::string & key) const noexcept {

@@ -4,6 +4,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <utility>
 
 namespace mal {
   template<typename E>
@@ -13,10 +14,10 @@ namespace mal {
 
   template<can_eval EVAL>
   class eval_ast {
-    env * m_e;
+    std::shared_ptr<env> m_e;
 
   public:
-    constexpr explicit eval_ast(env * e) noexcept : m_e { e } {
+    explicit eval_ast(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
     }
 
     type operator()(const types::hashmap & in) {
