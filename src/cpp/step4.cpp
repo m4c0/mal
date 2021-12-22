@@ -30,7 +30,7 @@ static auto readline(std::string & line) {
 }
 int main() {
   mal::env e;
-  mal::core::setup_step2_funcs(e);
+  mal::core::setup_step4_funcs(e);
 
   std::string line;
   while (readline(line)) {

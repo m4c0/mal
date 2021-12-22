@@ -78,7 +78,7 @@ namespace mal {
     }
 
     std::string operator()(const types::string & s) const {
-      if (m_readably) return **s;
+      if (!m_readably) return **s;
 
       std::ostringstream os;
       os << '"';
@@ -122,7 +122,7 @@ namespace mal {
     }
   };
 
-  static std::string pr_str(const mal::type & v, bool readably = false) {
+  static std::string pr_str(const mal::type & v, bool readably = true) {
     return v.visit(printer { readably });
   }
 }
