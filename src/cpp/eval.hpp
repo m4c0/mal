@@ -38,10 +38,19 @@ namespace mal {
         if (key.empty()) return types::error { "let* env can only have symbol as keys" };
 
         auto value = e->at(i + 1).visit(new_eval);
+        if (value.is_error()) return value;
         inner.set(key, value);
       }
 
       return list[2].visit(new_eval);
+    }
+    [[nodiscard]] type doit(const types::list & in) const noexcept {
+      const auto & list = (*in).peek();
+      for (auto it = list.begin() + 1; it != list.end() - 1; ++it) {
+        auto r = it->visit(*this);
+        if (r.is_error()) return r;
+      }
+      return list.back().visit(*this);
     }
 
   public:
@@ -51,9 +60,10 @@ namespace mal {
     type operator()(const types::list & in) const noexcept {
       if ((*in).begin() == (*in).end()) return in;
 
-      auto first = *(*in).begin();
-      if (first.to_symbol() == "def!") return def(in);
-      if (first.to_symbol() == "let*") return let(in);
+      auto first = (*in).begin()->to_symbol();
+      if (first == "def!") return def(in);
+      if (first == "let*") return let(in);
+      if (first == "do") return doit(in);
 
       auto evald = eval_ast<eval> { m_e }(in);
       if (evald.is_error()) return evald;
