@@ -42,7 +42,7 @@ namespace mal {
     }
 
     std::string operator()(const types::keyword & kw) const {
-      return { kw.value.begin(), kw.value.end() };
+      return *kw;
     }
 
     std::string operator()(const types::lambda & /*l*/) const {
@@ -74,7 +74,7 @@ namespace mal {
     }
 
     std::string operator()(const types::symbol & sym) const {
-      return { sym.value.begin(), sym.value.end() };
+      return *sym;
     }
 
     std::string operator()(const types::string & s) const {

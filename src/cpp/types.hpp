@@ -36,11 +36,28 @@ namespace mal::types::details {
   };
 
   template<typename Tp>
+  class token_holder {
+    std::string m_v;
+
+  public:
+    constexpr explicit token_holder(parser::token<Tp> v) noexcept : m_v { v.value.begin(), v.value.length() } {
+    }
+
+    [[nodiscard]] constexpr const std::string & operator*() const noexcept {
+      return m_v;
+    }
+  };
+
+  template<typename Tp>
   [[nodiscard]] static bool operator==(const holder<Tp> & a, const holder<Tp> & b) noexcept {
     return *a == *b;
   }
   template<typename Tp>
-  static bool operator==(const heavy_holder<Tp> & a, const heavy_holder<Tp> & b) noexcept {
+  [[nodiscard]] static bool operator==(const heavy_holder<Tp> & a, const heavy_holder<Tp> & b) noexcept {
+    return *a == *b;
+  }
+  template<typename Tp>
+  [[nodiscard]] static bool operator==(const token_holder<Tp> & a, const token_holder<Tp> & b) noexcept {
     return *a == *b;
   }
 }
@@ -56,13 +73,13 @@ namespace mal::types {
 
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
-  using keyword = parser::token<parser::kw>;
+  using keyword = details::token_holder<parser::kw>;
   using lambda = details::heavy_holder<std::function<type(std::span<const type>)>>;
   using list = details::heavy_holder<mal::list<type>>;
   using nil = parser::nil;
   using number = details::holder<int>;
   using string = details::heavy_holder<str>;
-  using symbol = parser::token<void>;
+  using symbol = details::token_holder<void>;
   using vector = details::heavy_holder<mal::vector<type>>;
 
   [[nodiscard]] static bool operator==(const lambda & /*a*/, const lambda & /*b*/) noexcept {
@@ -116,7 +133,7 @@ namespace mal::types {
     }
     [[nodiscard]] std::string to_symbol() const noexcept {
       if (const auto * v = std::get_if<symbol>(&m_value)) {
-        return { (*v).value.begin(), (*v).value.end() };
+        return **v;
       }
       return "";
     }

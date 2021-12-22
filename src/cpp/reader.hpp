@@ -21,18 +21,23 @@ namespace mal {
     type operator()(int n) const noexcept {
       return { types::number { n } };
     }
+    type operator()(parser::nil n) const noexcept {
+      return n;
+    }
     type operator()(list<type> l) const noexcept {
       return { types::list { std::move(l) } };
+    }
+    type operator()(parser::token<parser::kw> l) const noexcept {
+      return { types::keyword { l } };
+    }
+    type operator()(parser::token<void> l) const noexcept {
+      return { types::symbol { l } };
     }
     type operator()(str n) const noexcept {
       return { types::string { std::move(n) } };
     }
     type operator()(vector<type> l) const noexcept {
       return { types::vector { std::move(l) } };
-    }
-
-    type operator()(auto n) const noexcept {
-      return { std::move(n) };
     }
   };
 
