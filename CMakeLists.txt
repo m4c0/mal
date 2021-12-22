@@ -25,7 +25,7 @@ function(mal_step LANG NAME FILE)
   add_test(
     NAME ${TARGET}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND runtest.py --deferrable --optional tests/${FILE}.mal -- $<TARGET_FILE:${TARGET}>
+    COMMAND runtest.py --deferrable --optional tests/${NAME}_${FILE}.mal -- $<TARGET_FILE:${TARGET}>
     )
 endfunction()
 
@@ -40,12 +40,13 @@ function(mal_llvm_step NAME FILE)
   target_link_libraries(${TARGET} PRIVATE ${CLANG} ${CLANGPP} ${LLVM})
 endfunction()
 
-mal_cpp_step(step0 step0_repl)
-mal_cpp_step(step1 step1_read_print)
-mal_cpp_step(step2 step2_eval)
-mal_cpp_step(step3 step3_env)
+mal_cpp_step(step0 repl)
+mal_cpp_step(step1 read_print)
+mal_cpp_step(step2 eval)
+mal_cpp_step(step3 env)
+mal_cpp_step(step4 if_fn_do)
 
-mal_llvm_step(step0 step0_repl)
-mal_llvm_step(step1 step1_read_print)
-mal_llvm_step(step2 step2_eval)
+mal_llvm_step(step0 repl)
+mal_llvm_step(step1 read_print)
+#mal_llvm_step(step2 eval)
 
