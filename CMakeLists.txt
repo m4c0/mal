@@ -40,10 +40,12 @@ function(mal_llvm_step NAME FILE)
   target_link_libraries(${TARGET} PRIVATE ${CLANG} ${CLANGPP} ${LLVM})
 endfunction()
 
+mal_cpp_step(step0 step0_repl)
+mal_cpp_step(step1 step1_read_print)
+mal_cpp_step(step2 step2_eval)
+mal_cpp_step(step3 step3_env)
+
 mal_llvm_step(step0 step0_repl)
 mal_llvm_step(step1 step1_read_print)
 mal_llvm_step(step2 step2_eval)
 
-mal_cpp_step(step0 step0_repl)
-mal_cpp_step(step1 step1_read_print)
-mal_cpp_step(step2 step2_eval)
