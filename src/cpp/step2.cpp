@@ -1,3 +1,4 @@
+#include "env.hpp"
 #include "mal/list.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
@@ -6,66 +7,38 @@
 #include <iterator>
 #include <numeric>
 #include <string>
-#include <unordered_map>
 #include <variant>
 
-class env {
-  [[nodiscard]] static int to_int(const mal::type & a) noexcept {
-    if (const auto * v = std::get_if<mal::types::number>(&a)) {
-      return **v;
-    }
-    return 0;
-  }
+template<typename Op>
+[[nodiscard]] static mal::type oper(std::span<mal::type> args, Op && op) {
+  if (args.size() < 2) return mal::types::error { "Operation requires at least two operands" };
 
-  template<typename Op>
-  [[nodiscard]] static mal::type oper(std::span<mal::type> args, Op && op) {
-    if (args.size() < 2) return mal::types::error { "Operation requires at least two operands" };
+  int i = mal::to_int(args[0]);
+  int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
+    return op(a, mal::to_int(b));
+  });
+  return mal::types::number { res };
+}
+[[nodiscard]] static mal::type divides(std::span<mal::type> args) {
+  return oper(args, std::divides<>());
+}
+[[nodiscard]] static mal::type minus(std::span<mal::type> args) {
+  return oper(args, std::minus<>());
+}
+[[nodiscard]] static mal::type multiplies(std::span<mal::type> args) {
+  return oper(args, std::multiplies<>());
+}
+[[nodiscard]] static mal::type plus(std::span<mal::type> args) {
+  return oper(args, std::plus<>());
+}
 
-    int i = to_int(args[0]);
-    int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
-      return op(a, to_int(b));
-    });
-    return mal::types::number { res };
-  }
-  [[nodiscard]] static mal::type divides(std::span<mal::type> args) {
-    return oper(args, std::divides<>());
-  }
-  [[nodiscard]] static mal::type minus(std::span<mal::type> args) {
-    return oper(args, std::minus<>());
-  }
-  [[nodiscard]] static mal::type multiplies(std::span<mal::type> args) {
-    return oper(args, std::multiplies<>());
-  }
-  [[nodiscard]] static mal::type plus(std::span<mal::type> args) {
-    return oper(args, std::plus<>());
-  }
-
-  std::unordered_map<std::string, mal::types::lambda> m_data {};
-
-public:
-  env() {
-    m_data.emplace("+", mal::types::lambda { plus });
-    m_data.emplace("-", mal::types::lambda { minus });
-    m_data.emplace("*", mal::types::lambda { multiplies });
-    m_data.emplace("/", mal::types::lambda { divides });
-  }
-
-  [[nodiscard]] mal::type lookup(mal::types::symbol s) const noexcept {
-    auto it = m_data.find(std::string { s.value.begin(), s.value.end() });
-    if (it == m_data.end()) {
-      return mal::types::error { "Symbol not found" };
-    }
-    return it->second;
-  }
-};
-
-static mal::type EVAL(mal::type in, env * e);
+static mal::type EVAL(mal::type in, mal::env * e);
 
 class eval_ast {
-  env * m_e;
+  mal::env * m_e;
 
 public:
-  constexpr explicit eval_ast(env * e) noexcept : m_e { e } {
+  constexpr explicit eval_ast(mal::env * e) noexcept : m_e { e } {
   }
 
   mal::type operator()(mal::types::hashmap in) {
@@ -110,10 +83,10 @@ public:
   }
 };
 class eval {
-  env * m_e;
+  mal::env * m_e;
 
 public:
-  constexpr explicit eval(env * e) noexcept : m_e { e } {
+  constexpr explicit eval(mal::env * e) noexcept : m_e { e } {
   }
 
   mal::type operator()(mal::types::list in) {
@@ -136,7 +109,7 @@ public:
 static auto READ(auto in) {
   return mal::read_str(in);
 }
-static mal::type EVAL(mal::type in, env * e) {
+static mal::type EVAL(mal::type in, mal::env * e) {
   return std::visit(eval { e }, std::move(in));
 }
 static auto PRINT(auto in) {
@@ -144,7 +117,12 @@ static auto PRINT(auto in) {
 }
 
 static auto rep(auto in) {
-  env e;
+  mal::env e;
+  e.emplace("+", mal::types::lambda { plus });
+  e.emplace("-", mal::types::lambda { minus });
+  e.emplace("*", mal::types::lambda { multiplies });
+  e.emplace("/", mal::types::lambda { divides });
+
   return PRINT(EVAL(READ(in), &e));
 }
 
