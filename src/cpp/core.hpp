@@ -3,11 +3,22 @@
 #include "printer.hpp"
 #include "types.hpp"
 
+#include <functional>
 #include <iostream>
 #include <numeric>
 #include <sstream>
 
 namespace mal::core::details {
+  template<typename Op>
+  [[nodiscard]] static auto bool_bifunc(Op && op) {
+    return [op](std::span<const type> args) noexcept -> type {
+      if (args.size() != 2) return types::error { "Operation requires two operands" };
+
+      int a = args[0].to_int();
+      int b = args[1].to_int();
+      return types::boolean { op(a, b) };
+    };
+  }
   template<typename Op>
   [[nodiscard]] static auto int_bifunc(Op && op) {
     return [op](std::span<const type> args) noexcept -> type {
@@ -99,6 +110,11 @@ namespace mal::core {
     e.set("list?", types::lambda { is_list });
     e.set("empty?", types::lambda { is_empty });
     e.set("count", types::lambda { count });
+
+    e.set("<", types::lambda { details::bool_bifunc(std::less<>()) });
+    e.set("<=", types::lambda { details::bool_bifunc(std::less_equal<>()) });
+    e.set(">", types::lambda { details::bool_bifunc(std::greater<>()) });
+    e.set(">=", types::lambda { details::bool_bifunc(std::greater_equal<>()) });
 
     e.set("pr-str", types::lambda { pr_str });
     e.set("str", types::lambda { str });
