@@ -38,6 +38,10 @@ namespace mal {
     [[nodiscard]] auto take() noexcept {
       return std::move(m_data);
     }
+
+    [[nodiscard]] bool operator==(const container<T> & o) const noexcept {
+      return m_data == o.m_data;
+    }
   };
   template<typename T>
   struct list : public container<std::vector<T>> {

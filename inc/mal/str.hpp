@@ -17,7 +17,10 @@ namespace mal {
     str & operator=(const str &) = delete;
     str & operator=(str &&) noexcept = default;
 
-    [[nodiscard]] constexpr auto & operator*() const noexcept {
+    [[nodiscard]] bool operator==(const str & o) const noexcept {
+      return m_value == o.m_value;
+    }
+    [[nodiscard]] constexpr const auto & operator*() const noexcept {
       return m_value;
     }
 

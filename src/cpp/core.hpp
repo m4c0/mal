@@ -97,6 +97,11 @@ namespace mal::core {
     return types::list { std::move(res) };
   }
 
+  static type equal(std::span<const type> args) noexcept {
+    if (args.size() != 2) return types::error { "Can only compare two values" };
+    return types::boolean { args[0] == args[1] };
+  }
+
   static void setup_step2_funcs(auto & e) {
     e.set("+", types::lambda { details::int_bifunc(std::plus<>()) });
     e.set("-", types::lambda { details::int_bifunc(std::minus<>()) });
@@ -110,6 +115,8 @@ namespace mal::core {
     e.set("list?", types::lambda { is_list });
     e.set("empty?", types::lambda { is_empty });
     e.set("count", types::lambda { count });
+
+    e.set("=", types::lambda { equal });
 
     e.set("<", types::lambda { details::bool_bifunc(std::less<>()) });
     e.set("<=", types::lambda { details::bool_bifunc(std::less_equal<>()) });

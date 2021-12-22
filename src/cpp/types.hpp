@@ -34,6 +34,15 @@ namespace mal::types::details {
       return *m_v;
     }
   };
+
+  template<typename Tp>
+  [[nodiscard]] static bool operator==(const holder<Tp> & a, const holder<Tp> & b) noexcept {
+    return *a == *b;
+  }
+  template<typename Tp>
+  static bool operator==(const heavy_holder<Tp> & a, const heavy_holder<Tp> & b) noexcept {
+    return *a == *b;
+  }
 }
 namespace mal::types {
   class type;
@@ -56,12 +65,22 @@ namespace mal::types {
   using symbol = parser::token<void>;
   using vector = details::heavy_holder<mal::vector<type>>;
 
+  [[nodiscard]] static bool operator==(const lambda & /*a*/, const lambda & /*b*/) noexcept {
+    return false;
+  }
+
   class type {
     std::variant<error, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> m_value {};
 
   public:
     constexpr type() = default;
     type(auto v) : m_value(std::move(v)) { // NOLINT - we want the simplicity of implicit
+    }
+
+    [[nodiscard]] bool operator==(const type & o) const noexcept {
+      if (is<vector>() && o.is<list>()) return *as<vector>() == *o.as<list>();
+      if (is<list>() && o.is<vector>()) return *as<list>() == *o.as<vector>();
+      return m_value == o.m_value;
     }
 
     template<typename Tp>
