@@ -10,22 +10,12 @@ namespace mal::core {
     return [op](std::span<type> args) noexcept -> type {
       if (args.size() < 2) return types::error { "Operation requires at least two operands" };
 
-      int i = to_int(args[0]);
+      int i = args[0].to_int();
       int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
-        return op(a, to_int(b));
+        return op(a, b.to_int());
       });
       return types::number { res };
     };
-  }
-  template<typename Op>
-  [[nodiscard]] static type int_bifunc(std::span<type> args, Op && op) {
-    if (args.size() < 2) return types::error { "Operation requires at least two operands" };
-
-    int i = to_int(args[0]);
-    int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
-      return op(a, to_int(b));
-    });
-    return types::number { res };
   }
 
   static void setup_step2_funcs(auto & e) {

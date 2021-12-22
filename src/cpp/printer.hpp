@@ -115,6 +115,6 @@ namespace mal {
   };
 
   static std::string pr_str(const mal::type & v) {
-    return std::visit(printer {}, v);
+    return v.visit(printer {});
   }
 }

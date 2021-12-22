@@ -14,9 +14,9 @@ namespace mal::eval {
       auto evald = eval_ast<Self> { m_e }(std::move(in));
       if (evald.is_error()) return evald;
 
-      auto list = std::get<types::list>(evald).take();
+      auto list = evald.template as<types::list>().take();
 
-      auto oper = std::get<types::lambda>(list.at(0));
+      auto oper = list.at(0).template as<types::lambda>();
       auto args = std::span(list).subspan(1);
       return (*oper)(args);
     }
