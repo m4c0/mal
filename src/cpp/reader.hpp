@@ -15,9 +15,22 @@ namespace mal {
     type operator()(bool b) const noexcept {
       return { types::boolean { b } };
     }
+    type operator()(hashmap<type> l) const noexcept {
+      return { types::hashmap { std::move(l) } };
+    }
     type operator()(int n) const noexcept {
       return { types::number { n } };
     }
+    type operator()(list<type> l) const noexcept {
+      return { types::list { std::move(l) } };
+    }
+    type operator()(str n) const noexcept {
+      return { types::string { std::move(n) } };
+    }
+    type operator()(vector<type> l) const noexcept {
+      return { types::vector { std::move(l) } };
+    }
+
     type operator()(auto n) const noexcept {
       return { std::move(n) };
     }

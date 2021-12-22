@@ -16,7 +16,7 @@ struct eval : public mal::eval::base<eval> {
 static auto READ(auto in) {
   return mal::read_str(in);
 }
-static mal::type EVAL(mal::type in, mal::env * e) {
+static mal::type EVAL(const mal::type & in, mal::env * e) {
   return in.visit(eval { e });
 }
 static auto PRINT(auto in) {

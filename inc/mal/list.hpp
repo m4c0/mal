@@ -32,6 +32,9 @@ namespace mal {
       return m_data.end();
     }
 
+    [[nodiscard]] const auto & peek() const noexcept {
+      return m_data;
+    }
     [[nodiscard]] auto take() noexcept {
       return std::move(m_data);
     }

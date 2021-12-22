@@ -19,37 +19,37 @@ namespace mal {
     constexpr explicit eval_ast(env * e) noexcept : m_e { e } {
     }
 
-    type operator()(types::hashmap in) {
-      types::hashmap out;
-      for (auto & v : in.take()) {
+    type operator()(const types::hashmap & in) {
+      hashmap<type> out;
+      for (const auto & v : *in) {
         auto nv = v.second.visit(EVAL { m_e });
         if (nv.is_error()) return nv;
 
         out = out + hashmap_entry<type> { v.first, std::move(nv) };
       }
-      return std::move(out);
+      return types::hashmap { std::move(out) };
     }
 
-    type operator()(types::list in) {
-      types::list out;
-      for (auto & v : in.take()) {
+    type operator()(const types::list & in) {
+      list<type> out;
+      for (const auto & v : *in) {
         auto nv = v.visit(EVAL { m_e });
         if (nv.is_error()) return nv;
 
         out = out + std::move(nv);
       }
-      return std::move(out);
+      return types::list { std::move(out) };
     }
 
-    type operator()(types::vector in) {
-      types::vector out;
-      for (auto & v : in.take()) {
+    type operator()(const types::vector & in) {
+      vector<type> out;
+      for (const auto & v : *in) {
         auto nv = v.visit(EVAL { m_e });
         if (nv.is_error()) return nv;
 
         out = out + std::move(nv);
       }
-      return std::move(out);
+      return types::vector { std::move(out) };
     }
 
     type operator()(types::symbol in) {

@@ -7,7 +7,7 @@
 namespace mal::core {
   template<typename Op>
   [[nodiscard]] static auto int_bifunc(Op && op) {
-    return [op](std::span<type> args) noexcept -> type {
+    return [op](std::span<const type> args) noexcept -> type {
       if (args.size() < 2) return types::error { "Operation requires at least two operands" };
 
       int i = args[0].to_int();

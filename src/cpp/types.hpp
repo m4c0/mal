@@ -21,6 +21,19 @@ namespace mal::types::details {
       return m_v;
     }
   };
+
+  template<typename Tp>
+  class heavy_holder {
+    std::shared_ptr<Tp> m_v;
+
+  public:
+    explicit heavy_holder(Tp v) : m_v { std::make_shared<Tp>(std::move(v)) } {
+    }
+
+    [[nodiscard]] constexpr const Tp & operator*() const noexcept {
+      return *m_v;
+    }
+  };
 }
 namespace mal::types {
   class type;
@@ -33,16 +46,15 @@ namespace mal::types {
   };
 
   using boolean = details::holder<bool>;
+  using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = parser::token<parser::kw>;
-  using lambda = details::holder<std::function<type(std::span<type>)>>;
+  using lambda = details::holder<std::function<type(std::span<const type>)>>;
+  using list = details::heavy_holder<mal::list<type>>;
   using nil = parser::nil;
   using number = details::holder<int>;
-  using string = str;
+  using string = details::heavy_holder<str>;
   using symbol = parser::token<void>;
-
-  using hashmap = mal::hashmap<type>;
-  using list = mal::list<type>;
-  using vector = mal::vector<type>;
+  using vector = details::heavy_holder<mal::vector<type>>;
 
   class type {
     std::variant<error, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> m_value {};
@@ -53,18 +65,14 @@ namespace mal::types {
     }
 
     template<typename Tp>
-    [[nodiscard]] Tp as() noexcept {
-      return std::move(std::get<Tp>(m_value));
+    [[nodiscard]] const Tp & as() const noexcept {
+      return std::get<Tp>(m_value);
     }
 
     [[nodiscard]] constexpr bool is_error() const noexcept {
       return std::holds_alternative<error>(m_value);
     }
 
-    template<typename Visitor>
-    [[nodiscard]] auto visit(Visitor && v) noexcept {
-      return std::visit(std::forward<Visitor>(v), std::move(m_value));
-    }
     template<typename Visitor>
     [[nodiscard]] auto visit(Visitor && v) const noexcept {
       return std::visit(std::forward<Visitor>(v), m_value);

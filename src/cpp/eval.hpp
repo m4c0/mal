@@ -10,11 +10,11 @@ namespace mal::eval {
     env * m_e;
 
   protected:
-    [[nodiscard]] virtual type eval_non_empty_list(types::list in) {
-      auto evald = eval_ast<Self> { m_e }(std::move(in));
+    [[nodiscard]] virtual type eval_non_empty_list(const types::list & in) {
+      auto evald = eval_ast<Self> { m_e }(in);
       if (evald.is_error()) return evald;
 
-      auto list = evald.template as<types::list>().take();
+      const auto & list = (*evald.template as<types::list>()).peek();
 
       auto oper = list.at(0).template as<types::lambda>();
       auto args = std::span(list).subspan(1);
@@ -25,9 +25,9 @@ namespace mal::eval {
     constexpr explicit base(env * e) noexcept : m_e { e } {
     }
 
-    type operator()(types::list in) {
-      if (in.begin() == in.end()) return std::move(in);
-      return this->eval_non_empty_list(std::move(in));
+    type operator()(const types::list & in) {
+      if ((*in).begin() == (*in).end()) return in;
+      return this->eval_non_empty_list(in);
     }
 
     type operator()(auto in) {

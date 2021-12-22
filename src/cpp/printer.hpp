@@ -22,7 +22,7 @@ namespace mal {
       std::ostringstream os;
       os << "{";
       bool first = true;
-      for (const auto & kv : h) {
+      for (const auto & kv : *h) {
         if (!first) {
           os << " ";
         }
@@ -47,7 +47,7 @@ namespace mal {
       std::ostringstream os;
       os << "(";
       bool first = true;
-      for (const auto & v : h) {
+      for (const auto & v : *h) {
         if (!first) {
           os << " ";
         }
@@ -74,7 +74,7 @@ namespace mal {
     std::string operator()(const types::string & s) {
       std::ostringstream os;
       os << '"';
-      for (char c : *s) {
+      for (char c : **s) {
         switch (c) {
         case '"':
           os << "\\\"";
@@ -101,7 +101,7 @@ namespace mal {
       std::ostringstream os;
       os << "[";
       bool first = true;
-      for (const auto & v : h) {
+      for (const auto & v : *h) {
         if (!first) {
           os << " ";
         }
