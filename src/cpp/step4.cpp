@@ -19,8 +19,8 @@ static auto PRINT(auto in) {
   return mal::pr_str(in);
 }
 
-static auto rep(auto in, auto e) {
-  return PRINT(EVAL(READ(in), e));
+static auto rep(const std::string & in, std::shared_ptr<mal::env> e) {
+  return PRINT(EVAL(READ(in), std::move(e)));
 }
 
 static auto readline(std::string & line) {
@@ -30,7 +30,7 @@ static auto readline(std::string & line) {
 }
 int main() {
   auto e = std::make_shared<mal::env>();
-  mal::core::setup_step4_funcs(e);
+  mal::core::setup_step4_funcs(rep, e);
 
   std::string line;
   while (readline(line)) {

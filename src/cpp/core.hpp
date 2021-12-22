@@ -109,7 +109,7 @@ namespace mal::core {
     e->set("/", types::lambda { details::int_bifunc(std::divides<>()) });
   }
 
-  static void setup_step4_funcs(auto & e) {
+  static void setup_step4_funcs(auto rep, auto & e) {
     setup_step2_funcs(e);
     e->set("list", types::lambda { list });
     e->set("list?", types::lambda { is_list });
@@ -127,5 +127,7 @@ namespace mal::core {
     e->set("str", types::lambda { str });
     e->set("prn", types::lambda { details::cout_pr_str(true) });
     e->set("println", types::lambda { details::cout_pr_str(false) });
+
+    rep("(def! not (fn* (a) (if a false true)))", e);
   }
 }
