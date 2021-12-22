@@ -19,8 +19,26 @@ namespace mal {
       if (!value.is_error()) m_e->set(key, value);
       return value;
     }
-    [[nodiscard]] auto let(const types::list & in) const noexcept {
-      return in;
+    [[nodiscard]] type let(const types::list & in) const noexcept {
+      env inner { m_e };
+
+      const auto & list = (*in).peek();
+      if (list.size() != 3) return types::error { "let* must have an env and an expression" };
+      if (!list[1].is<types::list>()) return types::error { "let* env must be a list" };
+
+      const auto & e = (*list[1].as<types::list>()).peek();
+      if (e.size() % 2 == 1) return types::error { "let* env must have a balanced list of key and values" };
+
+      eval new_eval { &inner };
+      for (int i = 0; i < e.size(); i += 2) {
+        auto key = e[i].to_symbol();
+        if (key.empty()) return types::error { "let* env can only have symbol as keys" };
+
+        auto value = e[i + 1].visit(new_eval);
+        inner.set(key, value);
+      }
+
+      return list[2].visit(new_eval);
     }
 
   public:

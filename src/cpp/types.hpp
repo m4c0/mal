@@ -69,6 +69,11 @@ namespace mal::types {
       return std::get<Tp>(m_value);
     }
 
+    template<typename Tp>
+    [[nodiscard]] bool is() const noexcept {
+      return std::holds_alternative<Tp>(m_value);
+    }
+
     [[nodiscard]] constexpr bool is_error() const noexcept {
       return std::holds_alternative<error>(m_value);
     }
@@ -88,7 +93,7 @@ namespace mal::types {
       if (const auto * v = std::get_if<symbol>(&m_value)) {
         return { (*v).value.begin(), (*v).value.end() };
       }
-      return 0;
+      return "";
     }
   };
 }
