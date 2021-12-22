@@ -15,7 +15,7 @@ namespace mal {
     }
 
     std::string operator()(const types::error & e) {
-      return e.message();
+      return *e;
     }
 
     std::string operator()(const types::hashmap & h) {
