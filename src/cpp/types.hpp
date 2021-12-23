@@ -8,6 +8,9 @@
 #include <utility>
 #include <variant>
 
+namespace mal::types {
+  class type;
+}
 namespace mal::types::details {
   template<typename Tp>
   class holder {
@@ -60,10 +63,12 @@ namespace mal::types::details {
   [[nodiscard]] static bool operator==(const token_holder<Tp> & a, const token_holder<Tp> & b) noexcept {
     return *a == *b;
   }
+
+  using lambda_args_t = std::span<const type>;
+  using lambda_t = std::function<std::optional<type>(lambda_args_t)>;
+  [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
-  class type;
-
   struct error : details::holder<std::string> {
     using holder::holder;
 
@@ -71,10 +76,14 @@ namespace mal::types {
     }
   };
 
+  struct lambda : details::heavy_holder<std::function<std::optional<type>(std::span<const type>)>> {
+    explicit lambda(std::function<type(std::span<const type>)> fn) : heavy_holder { details::convert(std::move(fn)) } {
+    }
+  };
+
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
-  using lambda = details::heavy_holder<std::function<type(std::span<const type>)>>;
   using list = details::heavy_holder<mal::list<type>>;
   using nil = parser::nil;
   using number = details::holder<int>;
@@ -138,6 +147,13 @@ namespace mal::types {
       return "";
     }
   };
+}
+namespace mal::types::details {
+  [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept {
+    return [fn = std::move(fn)](lambda_args_t args) noexcept {
+      return std::optional { fn(args) };
+    };
+  }
 }
 namespace mal {
   using type = types::type;
