@@ -1,6 +1,7 @@
 #pragma once
 
 #include "env.hpp"
+#include "eval.fn.hpp"
 #include "eval_ast.hpp"
 #include "types.hpp"
 
@@ -71,48 +72,6 @@ namespace mal {
       }
       return list[3].visit(*this);
     }
-    [[nodiscard]] type fn(const types::list & in) const noexcept {
-      const auto & list = (*in).peek();
-      if (list.size() != 3) return types::error { "fn* must have parameters and body" };
-
-      const std::vector<type> * e {};
-      if (list[1].is<types::list>()) e = &(*list[1].as<types::list>()).peek();
-      if (list[1].is<types::vector>()) e = &(*list[1].as<types::vector>()).peek();
-      if (e == nullptr) return types::error { "fn* parameters must be a list or vector" };
-
-      const auto l = [oe = m_e, params = *e, body = list[2]](std::span<const type> args) noexcept -> type {
-        auto it = std::find_if(args.begin(), args.end(), [](auto t) {
-          return t.is_error();
-        });
-        if (it != args.end()) {
-          return *it;
-        }
-
-        auto e = std::make_shared<env>(oe);
-
-        for (int i = 0; i < params.size(); i++) {
-          auto p = params[i].to_symbol();
-          if (p.empty()) return types::error { "fn* without a symbol parameter" };
-          if (p == "&") {
-            if (params.size() != i + 2) return types::error { "fn* missing bind after &" };
-
-            p = params[i + 1].to_symbol();
-            if (p.empty()) return types::error { "fn* without a symbol parameter after &" };
-
-            mal::list<type> l;
-            for (int j = i; j < args.size(); j++) {
-              l = l + args[j];
-            }
-            e->set(p, types::list { std::move(l) });
-            break;
-          }
-          if (args.size() <= i) return types::error { "fn* argument list differs in size from actual call" };
-          e->set(p, args[i]);
-        }
-        return body.visit(eval { e });
-      };
-      return types::lambda { l };
-    }
 
   public:
     explicit eval(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
@@ -126,7 +85,7 @@ namespace mal {
       if (first == "let*") return let(in);
       if (first == "do") return do_(in);
       if (first == "if") return if_(in);
-      if (first == "fn*") return fn(in);
+      if (first == "fn*") return evals::fn<eval>(m_e, in);
 
       auto evald = eval_ast<eval> { m_e }(in);
       if (evald.is_error()) return evald;
