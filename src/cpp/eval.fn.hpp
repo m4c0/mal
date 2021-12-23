@@ -3,18 +3,10 @@
 #include "env.hpp"
 #include "types.hpp"
 
-namespace mal::evals {
+namespace mal::evals::details {
   template<typename Eval>
-  [[nodiscard]] static type fn(std::shared_ptr<env> oe, const types::list & in) noexcept {
-    const auto & list = (*in).peek();
-    if (list.size() != 3) return types::error { "fn* must have parameters and body" };
-
-    const std::vector<type> * params {};
-    if (list[1].is<types::list>()) params = &(*list[1].as<types::list>()).peek();
-    if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
-    if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
-
-    const auto l = [oe, params = *params, body = list[2]](std::span<const type> args) noexcept -> type {
+  static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
+    return [oe, params, body](std::span<const type> args) noexcept -> type {
       auto it = std::find_if(args.begin(), args.end(), [](auto t) {
         return t.is_error();
       });
@@ -45,6 +37,19 @@ namespace mal::evals {
       }
       return body.visit(Eval { e });
     };
-    return types::lambda { l };
+  }
+}
+namespace mal::evals {
+  template<typename Eval>
+  [[nodiscard]] static type fn(const std::shared_ptr<env> & oe, const types::list & in) noexcept {
+    const auto & list = (*in).peek();
+    if (list.size() != 3) return types::error { "fn* must have parameters and body" };
+
+    const std::vector<type> * params {};
+    if (list[1].is<types::list>()) params = &(*list[1].as<types::list>()).peek();
+    if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
+    if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
+
+    return types::lambda { details::fn_lambda<Eval>(oe, *params, list[2]) };
   }
 }
