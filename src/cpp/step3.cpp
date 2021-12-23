@@ -1,8 +1,6 @@
 #include "core.hpp"
 #include "env.hpp"
 #include "eval.hpp"
-#include "eval_ast.hpp"
-#include "mal/list.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
 
@@ -11,9 +9,6 @@
 
 static auto READ(auto in) {
   return mal::read_str(in);
-}
-static mal::type EVAL(const mal::type & in, auto e) {
-  return in.visit(mal::eval { e });
 }
 static auto PRINT(auto in) {
   return mal::pr_str(in);

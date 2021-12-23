@@ -87,7 +87,7 @@ namespace mal {
       if (first == "if") return if_(in);
       if (first == "fn*") return evals::fn<eval>(m_e, in);
 
-      auto evald = eval_ast<eval> { m_e }(in);
+      auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return evald;
 
       const auto & list = (*evald.as<types::list>()).peek();
@@ -98,7 +98,11 @@ namespace mal {
     }
 
     type operator()(const auto & in) const noexcept {
-      return eval_ast<eval> { m_e }(in);
+      return eval_ast { m_e }(in);
     }
   };
+
+  static type EVAL(const type & in, const std::shared_ptr<mal::env> & e) {
+    return in.visit(eval { e });
+  }
 }
