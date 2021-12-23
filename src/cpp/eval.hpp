@@ -97,8 +97,8 @@ namespace mal {
       return (*oper)(args);
     }
 
-    type operator()(auto in) const noexcept {
-      return eval_ast<eval> { m_e }(std::move(in));
+    type operator()(const auto & in) const noexcept {
+      return eval_ast<eval> { m_e }(in);
     }
   };
 }

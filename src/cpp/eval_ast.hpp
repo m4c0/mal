@@ -53,12 +53,12 @@ namespace mal {
       return types::vector { std::move(out) };
     }
 
-    type operator()(types::symbol in) {
+    type operator()(const types::symbol & in) {
       return m_e->lookup(in);
     }
 
-    type operator()(auto in) {
-      return std::move(in);
+    type operator()(const auto & in) {
+      return in;
     }
   };
 }
