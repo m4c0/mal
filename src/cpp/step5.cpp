@@ -1,6 +1,6 @@
 #include "core.hpp"
 #include "env.hpp"
-#include "eval.hpp"
+#include "eval.impl.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
 

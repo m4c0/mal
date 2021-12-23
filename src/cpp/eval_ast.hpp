@@ -1,14 +1,13 @@
 #pragma once
 
 #include "env.hpp"
+#include "eval.hpp"
 
 #include <concepts>
 #include <type_traits>
 #include <utility>
 
 namespace mal {
-  static mal::type EVAL(const mal::type & in, const std::shared_ptr<mal::env> & e);
-
   class eval_ast {
     std::shared_ptr<env> m_e;
 

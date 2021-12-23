@@ -1,10 +1,10 @@
 #pragma once
 
 #include "env.hpp"
+#include "eval.hpp"
 #include "types.hpp"
 
 namespace mal::evals::details {
-  template<typename Eval>
   static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
     return [oe, params, body](std::span<const type> args) noexcept -> type {
       auto it = std::find_if(args.begin(), args.end(), [](auto t) {
@@ -35,7 +35,7 @@ namespace mal::evals::details {
         if (args.size() <= i) return types::error { "fn* argument list differs in size from actual call" };
         e->set(p, args[i]);
       }
-      return body.visit(Eval { e });
+      return EVAL(body, e);
     };
   }
 }
@@ -50,6 +50,6 @@ namespace mal::evals {
     if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
     if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
 
-    return types::lambda { details::fn_lambda<Eval>(oe, *params, list[2]) };
+    return types::lambda { details::fn_lambda(oe, *params, list[2]) };
   }
 }
