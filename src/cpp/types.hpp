@@ -8,6 +8,9 @@
 #include <utility>
 #include <variant>
 
+namespace mal {
+  class env;
+}
 namespace mal::types {
   class type;
 }
@@ -64,8 +67,9 @@ namespace mal::types::details {
     return *a == *b;
   }
 
+  struct lambda_ret_t;
   using lambda_args_t = std::span<const type>;
-  using lambda_t = std::function<std::optional<type>(lambda_args_t)>;
+  using lambda_t = std::function<lambda_ret_t(lambda_args_t)>;
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
@@ -76,7 +80,9 @@ namespace mal::types {
     }
   };
 
-  struct lambda : details::heavy_holder<std::function<std::optional<type>(std::span<const type>)>> {
+  struct lambda : details::heavy_holder<details::lambda_t> {
+    explicit lambda(int /*marker*/, const details::lambda_t & fn) : heavy_holder { fn } {
+    }
     explicit lambda(std::function<type(std::span<const type>)> fn) : heavy_holder { details::convert(std::move(fn)) } {
     }
   };
@@ -149,9 +155,14 @@ namespace mal::types {
   };
 }
 namespace mal::types::details {
+  struct lambda_ret_t {
+    std::shared_ptr<env> e;
+    type t;
+  };
+
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept {
     return [fn = std::move(fn)](lambda_args_t args) noexcept {
-      return std::optional { fn(args) };
+      return lambda_ret_t { {}, fn(args) };
     };
   }
 }

@@ -10,12 +10,10 @@
 
 namespace mal::impl {
   class eval {
-    struct iteration {
-      bool tco {};
-      type res {};
-    };
+    using iteration = types::details::lambda_ret_t;
+
     [[nodiscard]] static iteration err(const std::string & msg) noexcept {
-      return iteration { false, types::error { msg } };
+      return iteration { {}, types::error { msg } };
     }
 
     std::shared_ptr<env> m_e;
@@ -29,7 +27,7 @@ namespace mal::impl {
 
       auto value = EVAL(list[2], m_e);
       if (!value.is_error()) m_e->set(key, value);
-      return { false, value };
+      return { {}, value };
     }
     [[nodiscard]] iteration let(const types::list & in) noexcept {
       auto inner = std::make_shared<env>(m_e);
@@ -49,20 +47,19 @@ namespace mal::impl {
         if (key.empty()) return err("let* env can only have symbol as keys");
 
         auto value = EVAL(e->at(i + 1), inner);
-        if (value.is_error()) return { false, value };
+        if (value.is_error()) return { {}, value };
         inner->set(key, value);
       }
 
-      m_e = inner;
-      return { true, list[2] };
+      return { inner, list[2] };
     }
     [[nodiscard]] iteration do_(const types::list & in) const noexcept {
       const auto & list = (*in).peek();
       for (auto it = list.begin() + 1; it != list.end() - 1; ++it) {
         auto r = EVAL(*it, m_e);
-        if (r.is_error()) return { false, r };
+        if (r.is_error()) return { {}, r };
       }
-      return { true, list.back() };
+      return { m_e, list.back() };
     }
     [[nodiscard]] iteration if_(const types::list & in) const noexcept {
       const auto & list = (*in).peek();
@@ -71,15 +68,15 @@ namespace mal::impl {
       }
 
       auto res = EVAL(list[1], m_e);
-      if (res.is_error()) return { false, res };
+      if (res.is_error()) return { {}, res };
 
       if (res.to_boolean()) {
-        return { true, list[2] };
+        return { m_e, list[2] };
       }
       if (list.size() == 3) {
-        return { false, types::nil {} };
+        return { {}, types::nil {} };
       }
-      return { true, list[3] };
+      return { m_e, list[3] };
     }
 
   public:
@@ -87,27 +84,27 @@ namespace mal::impl {
     }
 
     iteration operator()(const types::list & in) noexcept {
-      if ((*in).begin() == (*in).end()) return { false, in };
+      if ((*in).begin() == (*in).end()) return { {}, in };
 
       auto first = (*in).begin()->to_symbol();
       if (first == "def!") return def(in);
       if (first == "let*") return let(in);
       if (first == "do") return do_(in);
       if (first == "if") return if_(in);
-      if (first == "fn*") return { false, evals::fn<eval>(m_e, in) };
+      if (first == "fn*") return { {}, evals::fn<eval>(m_e, in) };
 
       auto evald = eval_ast { m_e }(in);
-      if (evald.is_error()) return { false, evald };
+      if (evald.is_error()) return { {}, evald };
 
       const auto & list = (*evald.as<types::list>()).peek();
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);
-      return { false, *(*oper)(args) };
+      return (*oper)(args);
     }
 
     iteration operator()(const auto & in) const noexcept {
-      return { false, eval_ast { m_e }(in) };
+      return { {}, eval_ast { m_e }(in) };
     }
   };
 
@@ -118,8 +115,9 @@ namespace mal {
     impl::eval eva { e };
     while (true) {
       auto iter = var.visit(eva);
-      if (!iter.tco) return iter.res;
-      var = iter.res;
+      if (!iter.e) return iter.t;
+      eva = impl::eval { iter.e };
+      var = iter.t;
     }
   }
 }

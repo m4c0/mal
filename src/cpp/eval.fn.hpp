@@ -5,25 +5,28 @@
 #include "types.hpp"
 
 namespace mal::evals::details {
+  static auto fn_err(const char * msg) noexcept {
+    return types::details::lambda_ret_t { {}, types::error { msg } };
+  }
   static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
-    return [oe, params, body](std::span<const type> args) noexcept -> type {
+    return [oe, params, body](std::span<const type> args) -> types::details::lambda_ret_t {
       auto it = std::find_if(args.begin(), args.end(), [](auto t) {
         return t.is_error();
       });
       if (it != args.end()) {
-        return *it;
+        return { {}, *it };
       }
 
       auto e = std::make_shared<env>(oe);
 
       for (int i = 0; i < params.size(); i++) {
         auto p = params[i].to_symbol();
-        if (p.empty()) return types::error { "fn* without a symbol parameter" };
+        if (p.empty()) return fn_err("fn* without a symbol parameter");
         if (p == "&") {
-          if (params.size() != i + 2) return types::error { "fn* missing bind after &" };
+          if (params.size() != i + 2) return fn_err("fn* missing bind after &");
 
           p = params[i + 1].to_symbol();
-          if (p.empty()) return types::error { "fn* without a symbol parameter after &" };
+          if (p.empty()) return fn_err("fn* without a symbol parameter after &");
 
           mal::list<type> l;
           for (int j = i; j < args.size(); j++) {
@@ -32,10 +35,10 @@ namespace mal::evals::details {
           e->set(p, types::list { std::move(l) });
           break;
         }
-        if (args.size() <= i) return types::error { "fn* argument list differs in size from actual call" };
+        if (args.size() <= i) return fn_err("fn* argument list differs in size from actual call");
         e->set(p, args[i]);
       }
-      return EVAL(body, e);
+      return { e, body };
     };
   }
 }
@@ -50,6 +53,6 @@ namespace mal::evals {
     if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
     if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
 
-    return types::lambda { details::fn_lambda(oe, *params, list[2]) };
+    return types::lambda { 0, details::fn_lambda(oe, *params, list[2]) };
   }
 }
