@@ -9,7 +9,9 @@ namespace mal::evals::details {
     return types::details::lambda_ret_t { {}, types::error { msg } };
   }
   static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
-    return [oe, params, body](std::span<const type> args) -> types::details::lambda_ret_t {
+    return [oe,
+            params,
+            body](std::span<const type> args, const std::shared_ptr<env> & /**/) -> types::details::lambda_ret_t {
       auto it = std::find_if(args.begin(), args.end(), [](auto t) {
         return t.is_error();
       });

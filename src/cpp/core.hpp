@@ -1,6 +1,7 @@
 #pragma once
 
 #include "printer.hpp"
+#include "reader.hpp"
 #include "types.hpp"
 
 #include <functional>
@@ -102,6 +103,15 @@ namespace mal::core {
     return types::boolean { args[0] == args[1] };
   }
 
+  static types::details::lambda_ret_t eval(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
+    if (args.size() != 1) return { {}, types::error { "Can only eval a single value" } };
+    return { e, args[0] };
+  }
+  static type read_string(std::span<const type> args) noexcept {
+    if (args.size() != 1) return types::error { "Can only read a single string" };
+    return read_str({ args[0].to_string() });
+  }
+
   static void setup_step2_funcs(auto & e) {
     e->set("+", types::lambda { details::int_bifunc(std::plus<>()) });
     e->set("-", types::lambda { details::int_bifunc(std::minus<>()) });
@@ -129,5 +139,12 @@ namespace mal::core {
     e->set("println", types::lambda { details::cout_pr_str(false) });
 
     rep("(def! not (fn* (a) (if a false true)))", e);
+  }
+
+  static void setup_step6_funcs(auto rep, auto & e) {
+    setup_step4_funcs(rep, e);
+
+    e->set("read-string", types::lambda { read_string });
+    e->set("eval", types::lambda { 0, eval });
   }
 }

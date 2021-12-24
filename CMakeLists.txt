@@ -46,6 +46,7 @@ mal_cpp_step(step2 eval)
 mal_cpp_step(step3 env)
 mal_cpp_step(step4 if_fn_do)
 mal_cpp_step(step5 tco)
+mal_cpp_step(step6 file)
 
 mal_llvm_step(step0 repl)
 mal_llvm_step(step1 read_print)

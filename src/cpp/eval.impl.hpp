@@ -100,7 +100,7 @@ namespace mal::impl {
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);
-      return (*oper)(args);
+      return (*oper)(args, m_e);
     }
 
     iteration operator()(const auto & in) const noexcept {

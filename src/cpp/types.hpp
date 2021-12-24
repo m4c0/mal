@@ -69,7 +69,7 @@ namespace mal::types::details {
 
   struct lambda_ret_t;
   using lambda_args_t = std::span<const type>;
-  using lambda_t = std::function<lambda_ret_t(lambda_args_t)>;
+  using lambda_t = std::function<lambda_ret_t(lambda_args_t, std::shared_ptr<env>)>;
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
@@ -152,6 +152,12 @@ namespace mal::types {
       }
       return "";
     }
+    [[nodiscard]] std::string to_string() const noexcept {
+      if (const auto * v = std::get_if<string>(&m_value)) {
+        return ***v;
+      }
+      return "";
+    }
   };
 }
 namespace mal::types::details {
@@ -161,7 +167,7 @@ namespace mal::types::details {
   };
 
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept {
-    return [fn = std::move(fn)](lambda_args_t args) noexcept {
+    return [fn = std::move(fn)](lambda_args_t args, const std::shared_ptr<env> & /**/) noexcept {
       return lambda_ret_t { {}, fn(args) };
     };
   }
