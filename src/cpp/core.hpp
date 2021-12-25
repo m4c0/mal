@@ -1,5 +1,6 @@
 #pragma once
 
+#include "log.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
 #include "types.hpp"
@@ -104,9 +105,12 @@ namespace mal::core {
     return types::boolean { args[0] == args[1] };
   }
 
-  static types::details::lambda_ret_t eval(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
-    if (args.size() != 1) return { {}, types::error { "Can only eval a single value" } };
-    return { e, args[0] };
+  static auto eval(const std::shared_ptr<env> & e) noexcept {
+    return [e](std::span<const type> args, auto /*call_env*/) noexcept -> types::details::lambda_ret_t {
+      if (args.size() != 1) return { {}, types::error { "Can only eval a single value" } };
+      log::debug() << "eval " << e.get() << "\n";
+      return { e, args[0] };
+    };
   }
   static type read_string(std::span<const type> args) noexcept {
     if (args.size() != 1) return types::error { "Can only read a single string" };
@@ -156,7 +160,7 @@ namespace mal::core {
     setup_step4_funcs(rep, e);
 
     e->set("read-string", types::lambda { read_string });
-    e->set("eval", types::lambda { 0, eval });
+    e->set("eval", types::lambda { 0, eval(e) });
     e->set("slurp", types::lambda { slurp });
 
     rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);

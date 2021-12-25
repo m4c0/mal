@@ -2,6 +2,7 @@
 
 #include "env.hpp"
 #include "eval.hpp"
+#include "log.hpp"
 #include "types.hpp"
 
 namespace mal::evals::details {
@@ -9,9 +10,7 @@ namespace mal::evals::details {
     return types::details::lambda_ret_t { {}, types::error { msg } };
   }
   static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
-    return [oe,
-            params,
-            body](std::span<const type> args, const std::shared_ptr<env> & /**/) -> types::details::lambda_ret_t {
+    return [oe, params, body](std::span<const type> args, auto /**/) -> types::details::lambda_ret_t {
       auto it = std::find_if(args.begin(), args.end(), [](auto t) {
         return t.is_error();
       });
@@ -55,6 +54,7 @@ namespace mal::evals {
     if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
     if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
 
+    log::debug() << "fn* " << oe.get() << "\n";
     return types::lambda { 0, details::fn_lambda(oe, *params, list[2]) };
   }
 }

@@ -16,7 +16,7 @@ namespace mal::impl {
       return iteration { {}, types::error { msg } };
     }
 
-    std::shared_ptr<env> m_e;
+    const std::shared_ptr<env> m_e;
 
     [[nodiscard]] iteration def(const types::list & in) const noexcept {
       const auto & list = (*in).peek();
@@ -24,6 +24,8 @@ namespace mal::impl {
 
       auto key = list[1].to_symbol();
       if (key.empty()) return err("def! can only be called for symbols");
+
+      log::debug() << "def! " << m_e.get() << " " << key << "\n";
 
       auto value = EVAL(list[2], m_e);
       if (!value.is_error()) m_e->set(key, value);
@@ -110,14 +112,13 @@ namespace mal::impl {
 
 }
 namespace mal {
-  static type EVAL(const type & in, const std::shared_ptr<mal::env> & e) {
+  static type EVAL(const type & in, std::shared_ptr<env> e) {
     type var = in;
-    impl::eval eva { e };
-    while (true) {
-      auto iter = var.visit(eva);
-      if (!iter.e) return iter.t;
-      eva = impl::eval { iter.e };
+    while (e) {
+      auto iter = var.visit(impl::eval { e });
+      e = iter.e;
       var = iter.t;
     }
+    return var;
   }
 }
