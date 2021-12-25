@@ -4,6 +4,7 @@
 #include "reader.hpp"
 #include "types.hpp"
 
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <numeric>
@@ -111,6 +112,16 @@ namespace mal::core {
     if (args.size() != 1) return types::error { "Can only read a single string" };
     return read_str({ args[0].to_string() });
   }
+  static type slurp(std::span<const type> args) noexcept {
+    if (args.size() != 1) return types::error { "Can only slurp a single file" };
+
+    std::ifstream in { args[0].to_string() };
+    if (!in) return types::error { "Failure to slurp file" };
+
+    std::ostringstream os {};
+    os << in.rdbuf();
+    return types::string { mal::str { os.str() } };
+  }
 
   static void setup_step2_funcs(auto & e) {
     e->set("+", types::lambda { details::int_bifunc(std::plus<>()) });
@@ -146,5 +157,8 @@ namespace mal::core {
 
     e->set("read-string", types::lambda { read_string });
     e->set("eval", types::lambda { 0, eval });
+    e->set("slurp", types::lambda { slurp });
+
+    rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);
   }
 }

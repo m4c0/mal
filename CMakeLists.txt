@@ -24,8 +24,8 @@ function(mal_step LANG NAME FILE)
 
   add_test(
     NAME ${TARGET}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND runtest.py --deferrable --optional tests/${NAME}_${FILE}.mal -- $<TARGET_FILE:${TARGET}>
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests
+    COMMAND ../../runtest.py --deferrable --optional ${NAME}_${FILE}.mal -- $<TARGET_FILE:${TARGET}>
     )
 endfunction()
 
