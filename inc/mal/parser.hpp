@@ -43,8 +43,8 @@ namespace mal::parser {
   static constexpr const auto rbr = skip(match('}'));
 
   static constexpr const auto comment = match(';') & many(skip(match_none_of("\n\r")));
-  static constexpr const auto space = many(skip(match_any_of(" \t\n\r,")));
-  static constexpr const auto trash = comment | space;
+  static constexpr const auto space = at_least_one(skip(match_any_of(" \t\n\r,")));
+  static constexpr const auto trash = many(comment | space);
 
   static constexpr const auto other = at_least_one(skip(match_none_of(" \t\r\n[]{}('\"`,;)]:~@^")));
 
