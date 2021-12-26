@@ -5,6 +5,7 @@
 #include "reader.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 static auto READ(auto in) {
@@ -23,9 +24,17 @@ static auto readline(std::string & line) {
 
   return static_cast<bool>(std::getline(std::cin, line));
 }
-int main() {
+int main(int argc, char ** argv) {
   auto e = std::make_shared<mal::env>();
   mal::core::setup_step6_funcs(rep, e);
+
+  std::span<char *> argn { argv, static_cast<size_t>(argc) };
+  if (argn.size() > 1) {
+    std::ostringstream os;
+    os << "(load-file \"" << argn[1] << "\")";
+    std::cout << rep(os.str(), e) << "\n";
+    return 0;
+  }
 
   std::string line;
   while (readline(line)) {
