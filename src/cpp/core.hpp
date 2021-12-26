@@ -1,5 +1,6 @@
 #pragma once
 
+#include "eval.hpp"
 #include "log.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
@@ -137,12 +138,28 @@ namespace mal::core {
   }
   static type deref(std::span<const type> args) noexcept {
     if (args.size() != 1) return types::error { "Can only deref a single value" };
+    if (!args[0].is<types::atom>()) return types::error { "deref requires an atom" };
     return *(args[0].as<types::atom>());
   }
   static type reset(std::span<const type> args) noexcept {
     if (args.size() != 2) return types::error { "reset! needs an atom and a value" };
-    args[0].as<types::atom>().reset(args[1]);
-    return args[1];
+    if (!args[0].is<types::atom>()) return types::error { "reset! requires an atom" };
+    return args[0].as<types::atom>().reset(args[1]);
+  }
+  static types::details::lambda_ret_t swap(std::span<const type> args, const std::shared_ptr<env> & env) noexcept {
+    if (args.size() < 2) return { {}, types::error { "swap! needs at least a atom and a function" } };
+    if (!args[0].is<types::atom>()) return { {}, types::error { "swap! requires an atom" } };
+    if (!args[1].is<types::lambda>()) return { {}, types::error { "swap! requires a function" } };
+
+    auto atom = args[0].as<types::atom>();
+
+    mal::list<type> call;
+    call = call + args[1];
+    call = call + *atom;
+    for (const type & arg : args.subspan(2)) {
+      call = call + arg;
+    }
+    return { {}, atom.reset(EVAL(types::list { std::move(call) }, env)) };
   }
 
   static void setup_step2_funcs(auto & e) {
@@ -185,6 +202,7 @@ namespace mal::core {
     e->set("atom?", types::lambda { is_atom });
     e->set("deref", types::lambda { deref });
     e->set("reset!", types::lambda { reset });
+    e->set("swap!", types::lambda { 0, swap });
 
     rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);
   }

@@ -40,8 +40,9 @@ namespace mal::types::details {
       return *m_v;
     }
 
-    void reset(Tp v) const noexcept {
+    [[nodiscard]] const Tp & reset(const Tp & v) const noexcept {
       *m_v = v;
+      return v;
     }
   };
 
