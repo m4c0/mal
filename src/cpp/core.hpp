@@ -127,6 +127,24 @@ namespace mal::core {
     return types::string { mal::str { os.str() } };
   }
 
+  static type atom(std::span<const type> args) noexcept {
+    if (args.size() != 1) return types::error { "Can only atomise a single value" };
+    return types::atom { args[0] };
+  }
+  static type is_atom(std::span<const type> args) noexcept {
+    if (args.size() != 1) return types::error { "Can only test a single value" };
+    return types::boolean { args[0].is<types::atom>() };
+  }
+  static type deref(std::span<const type> args) noexcept {
+    if (args.size() != 1) return types::error { "Can only deref a single value" };
+    return *(args[0].as<types::atom>());
+  }
+  static type reset(std::span<const type> args) noexcept {
+    if (args.size() != 2) return types::error { "reset! needs an atom and a value" };
+    args[0].as<types::atom>().reset(args[1]);
+    return args[1];
+  }
+
   static void setup_step2_funcs(auto & e) {
     e->set("+", types::lambda { details::int_bifunc(std::plus<>()) });
     e->set("-", types::lambda { details::int_bifunc(std::minus<>()) });
@@ -162,6 +180,11 @@ namespace mal::core {
     e->set("read-string", types::lambda { read_string });
     e->set("eval", types::lambda { 0, eval(e) });
     e->set("slurp", types::lambda { slurp });
+
+    e->set("atom", types::lambda { atom });
+    e->set("atom?", types::lambda { is_atom });
+    e->set("deref", types::lambda { deref });
+    e->set("reset!", types::lambda { reset });
 
     rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);
   }

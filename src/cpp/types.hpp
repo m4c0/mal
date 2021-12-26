@@ -39,6 +39,10 @@ namespace mal::types::details {
     [[nodiscard]] constexpr const Tp & operator*() const noexcept {
       return *m_v;
     }
+
+    void reset(Tp v) const noexcept {
+      *m_v = v;
+    }
   };
 
   template<typename Tp>
@@ -87,6 +91,7 @@ namespace mal::types {
     }
   };
 
+  using atom = details::heavy_holder<type>;
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
@@ -102,7 +107,7 @@ namespace mal::types {
   }
 
   class type {
-    std::variant<error, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> m_value {};
+    std::variant<error, atom, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> m_value {};
 
   public:
     constexpr type() = default;
@@ -115,6 +120,10 @@ namespace mal::types {
       return m_value == o.m_value;
     }
 
+    template<typename Tp>
+    [[nodiscard]] Tp & as() noexcept {
+      return std::get<Tp>(m_value);
+    }
     template<typename Tp>
     [[nodiscard]] const Tp & as() const noexcept {
       return std::get<Tp>(m_value);

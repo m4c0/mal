@@ -16,6 +16,12 @@ namespace mal {
     constexpr explicit printer(bool r) : m_readably { r } {
     }
 
+    std::string operator()(const types::atom & a) const {
+      std::ostringstream os;
+      os << "(atom " << (*a).visit(*this) << ")";
+      return os.str();
+    }
+
     std::string operator()(const types::boolean & b) const {
       return *b ? "true" : "false";
     }
