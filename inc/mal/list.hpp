@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -47,6 +49,10 @@ namespace mal {
   struct list : public container<std::vector<T>> {
     list operator+(T t) noexcept {
       this->data().emplace_back(std::move(t));
+      return std::move(*this);
+    }
+    list operator+(std::span<const T> t) noexcept {
+      std::copy(t.begin(), t.end(), std::back_inserter(this->data()));
       return std::move(*this);
     }
   };
