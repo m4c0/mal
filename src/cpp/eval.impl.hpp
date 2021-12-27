@@ -81,6 +81,12 @@ namespace mal::impl {
       return { m_e, list[3] };
     }
 
+    [[nodiscard]] static iteration quote(const types::list & in) noexcept {
+      const auto & list = (*in).peek();
+      if (list.size() != 2) return err("quote requires a parameter");
+      return { {}, list[1] };
+    }
+
   public:
     explicit eval(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
     }
@@ -94,6 +100,7 @@ namespace mal::impl {
       if (first == "do") return do_(in);
       if (first == "if") return if_(in);
       if (first == "fn*") return { {}, evals::fn<eval>(m_e, in) };
+      if (first == "quote") return quote(in);
 
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };
