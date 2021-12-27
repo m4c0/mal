@@ -34,7 +34,7 @@ namespace mal {
       return { types::symbol { l } };
     }
     type operator()(str n) const noexcept {
-      return { types::string { std::move(n) } };
+      return { types::string { *n } };
     }
     type operator()(vector<type> l) const noexcept {
       return { types::vector { std::move(l) } };

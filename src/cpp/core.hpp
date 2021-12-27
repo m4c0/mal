@@ -57,12 +57,12 @@ namespace mal::core {
   static type pr_str(std::span<const type> args) noexcept {
     std::ostringstream os;
     details::pr_str(os, args, " ", true);
-    return types::string { str { os.str() } };
+    return types::string { os.str() };
   }
   static type str(std::span<const type> args) noexcept {
     std::ostringstream os;
     details::pr_str(os, args, "", false);
-    return types::string { mal::str { os.str() } };
+    return types::string { os.str() };
   }
 
   static type is_empty(std::span<const type> args) noexcept {
@@ -125,7 +125,7 @@ namespace mal::core {
 
     std::ostringstream os {};
     os << in.rdbuf();
-    return types::string { mal::str { os.str() } };
+    return types::string { os.str() };
   }
 
   static type atom(std::span<const type> args) noexcept {

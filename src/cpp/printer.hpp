@@ -84,11 +84,11 @@ namespace mal {
     }
 
     std::string operator()(const types::string & s) const {
-      if (!m_readably) return **s;
+      if (!m_readably) return *s;
 
       std::ostringstream os;
       os << '"';
-      for (char c : **s) {
+      for (char c : *s) {
         switch (c) {
         case '"':
           os << "\\\"";

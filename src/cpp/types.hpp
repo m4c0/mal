@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mal/str.hpp"
 #include "types.holders.hpp"
 
 #include <functional>
@@ -42,7 +41,7 @@ namespace mal::types {
   using list = details::heavy_holder<mal::list<type>>;
   using nil = nullptr_t;
   using number = details::holder<int>;
-  using string = details::heavy_holder<str>;
+  using string = details::heavy_holder<std::string>;
   using symbol = details::token_holder<void>;
   using vector = details::heavy_holder<mal::vector<type>>;
 
@@ -107,7 +106,7 @@ namespace mal::types {
     }
     [[nodiscard]] std::string to_string() const noexcept {
       if (const auto * v = std::get_if<string>(&m_value)) {
-        return ***v;
+        return **v;
       }
       return "";
     }
