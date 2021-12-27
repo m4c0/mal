@@ -29,6 +29,13 @@ int main(int argc, char ** argv) {
   mal::core::setup_step6_funcs(rep, e);
 
   std::span<char *> argn { argv, static_cast<size_t>(argc) };
+
+  mal::list<mal::type> arg_list;
+  for (int i = 2; i < argn.size(); i++) {
+    arg_list = arg_list + mal::type { mal::types::string { mal::str { argn[i] } } };
+  }
+  e->set("*ARGV*", mal::type { mal::types::list { std::move(arg_list) } });
+
   if (argn.size() > 1) {
     std::ostringstream os;
     os << "(load-file \"" << argn[1] << "\")";
