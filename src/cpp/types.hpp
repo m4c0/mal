@@ -22,9 +22,6 @@ namespace mal::types::details {
 namespace mal::types {
   struct error : details::holder<std::string> {
     using holder::holder;
-
-    error() : holder("EOF") {
-    }
   };
 
   struct lambda : details::heavy_holder<details::lambda_t> {
@@ -50,7 +47,7 @@ namespace mal::types {
   }
 
   class type {
-    std::variant<error, atom, boolean, hashmap, number, keyword, lambda, list, nil, string, symbol, vector> m_value {};
+    std::variant<nil, atom, boolean, error, hashmap, number, keyword, lambda, list, string, symbol, vector> m_value {};
 
   public:
     constexpr type() = default;
