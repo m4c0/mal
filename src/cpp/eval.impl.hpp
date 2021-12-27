@@ -96,7 +96,7 @@ namespace mal::impl {
       if (first == "let*") return let(in);
       if (first == "do") return do_(in);
       if (first == "if") return if_(in);
-      if (first == "fn*") return { {}, evals::fn<eval>(m_e, in) };
+      if (first == "fn*") return { {}, evals::fn(m_e, in) };
       if (first == "quote") return quote(in);
 
       auto evald = eval_ast { m_e }(in);

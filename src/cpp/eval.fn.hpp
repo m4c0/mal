@@ -44,7 +44,6 @@ namespace mal::evals::details {
   }
 }
 namespace mal::evals {
-  template<typename Eval>
   [[nodiscard]] static type fn(const std::shared_ptr<env> & oe, const types::list & in) noexcept {
     const auto & list = (*in).peek();
     if (list.size() != 3) return types::error { "fn* must have parameters and body" };
