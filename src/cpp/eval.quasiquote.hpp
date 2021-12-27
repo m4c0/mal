@@ -8,9 +8,12 @@
 
 namespace mal::evals::impl {
   [[nodiscard]] static type quasiquote(const type & ast) noexcept {
-    if (!ast.is_iterable()) {
+    if (ast.is<types::hashmap>() || ast.is<types::symbol>()) {
       const type quote = types::symbol { "quote" };
       return types::list { quote, ast };
+    }
+    if (!ast.is_iterable()) {
+      return ast;
     }
 
     bool ast_is_vec = ast.is<types::vector>();
@@ -47,8 +50,6 @@ namespace mal::evals {
   [[nodiscard]] static type quasiquote(const types::list & in) noexcept {
     std::span<const type> list = *in;
     if (list.size() != 2) return types::error { "quasiquote requires a single argument" };
-    auto res = impl::quasiquote(in.at(1));
-    log::debug() << "quasiquote: " << pr_str(res) << "\n";
-    return res;
+    return impl::quasiquote(in.at(1));
   }
 }

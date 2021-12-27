@@ -99,6 +99,7 @@ namespace mal::impl {
       if (first == "if") return if_(in);
       if (first == "fn*") return { {}, evals::fn(m_e, in) };
       if (first == "quote") return quote(in);
+      if (first == "quasiquoteexpand") return { {}, evals::quasiquote(in) };
       if (first == "quasiquote") return { m_e, evals::quasiquote(in) };
 
       auto evald = eval_ast { m_e }(in);
