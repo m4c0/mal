@@ -37,7 +37,7 @@ namespace mal {
       return { types::string { *n } };
     }
     type operator()(vector<type> l) const noexcept {
-      return { types::vector { std::move(l) } };
+      return { types::vector { l.take() } };
     }
   };
 

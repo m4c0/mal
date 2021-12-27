@@ -38,12 +38,11 @@ namespace mal {
     }
 
     type operator()(const types::vector & in) {
-      vector<type> out;
+      std::vector<type> out;
       for (const auto & v : *in) {
         auto nv = EVAL(v, m_e);
         if (nv.is_error()) return nv;
-
-        out = out + std::move(nv);
+        out.push_back(std::move(nv));
       }
       return types::vector { std::move(out) };
     }

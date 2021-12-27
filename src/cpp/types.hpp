@@ -27,7 +27,7 @@ namespace mal::types {
   struct list : details::heavy_holder<mal::list<type>> {
     using heavy_holder::heavy_holder;
   };
-  struct vector : details::heavy_holder<mal::vector<type>> {
+  struct vector : details::heavy_holder<std::vector<type>> {
     using heavy_holder::heavy_holder;
   };
 
@@ -60,9 +60,15 @@ namespace mal::types {
     }
 
     [[nodiscard]] bool operator==(const type & o) const noexcept {
-      if (is<vector>() && o.is<list>()) return *as<vector>() == *o.as<list>();
-      if (is<list>() && o.is<vector>()) return *as<list>() == *o.as<vector>();
-      return m_value == o.m_value;
+      if (is_iterable() && o.is_iterable()) {
+        auto me = to_iterable();
+        auto them = o.to_iterable();
+        return std::equal(me.begin(), me.end(), them.begin(), them.end());
+      }
+      if (!is_iterable() && !o.is_iterable()) {
+        return m_value == o.m_value;
+      }
+      return false;
     }
 
     template<typename Tp>
@@ -81,6 +87,9 @@ namespace mal::types {
 
     [[nodiscard]] constexpr bool is_error() const noexcept {
       return std::holds_alternative<error>(m_value);
+    }
+    [[nodiscard]] constexpr bool is_iterable() const noexcept {
+      return std::holds_alternative<list>(m_value) || std::holds_alternative<vector>(m_value);
     }
 
     template<typename Visitor>
@@ -117,7 +126,7 @@ namespace mal::types {
         return (**v).peek();
       }
       if (const auto * v = std::get_if<vector>(&m_value)) {
-        return (**v).peek();
+        return **v;
       }
       return {};
     }
