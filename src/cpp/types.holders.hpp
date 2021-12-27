@@ -44,15 +44,10 @@ namespace mal::types::details {
   };
 
   template<typename Tp>
-  class token_holder {
-    std::string m_v;
-
-  public:
-    constexpr explicit token_holder(parser::token<Tp> v) noexcept : m_v { v.value.begin(), v.value.length() } {
-    }
-
-    [[nodiscard]] constexpr const std::string & operator*() const noexcept {
-      return m_v;
+  struct token_holder : heavy_holder<std::string> {
+    using heavy_holder::heavy_holder;
+    explicit token_holder(parser::token<Tp> v) noexcept
+      : heavy_holder { std::string { v.value.begin(), v.value.length() } } {
     }
   };
 
