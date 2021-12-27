@@ -67,15 +67,7 @@ namespace mal::core {
 
   static type is_empty(std::span<const type> args) noexcept {
     if (args.empty()) return types::boolean { false };
-    if (args[0].is<types::list>()) {
-      const auto & list = (*args[0].as<types::list>()).peek();
-      return types::boolean { list.empty() };
-    }
-    if (args[0].is<types::vector>()) {
-      const auto & list = (*args[0].as<types::vector>()).peek();
-      return types::boolean { list.empty() };
-    }
-    return types::boolean { false };
+    return types::boolean { args[0].to_iterable().empty() };
   }
   static type is_list(std::span<const type> args) noexcept {
     return types::boolean { !args.empty() && args[0].is<types::list>() };
@@ -83,13 +75,7 @@ namespace mal::core {
 
   static type count(std::span<const type> args) noexcept {
     if (args.empty()) return types::number { 0 };
-    if (args[0].is<types::list>()) {
-      return types::number { static_cast<int>((*args[0].as<types::list>()).peek().size()) };
-    }
-    if (args[0].is<types::vector>()) {
-      return types::number { static_cast<int>((*args[0].as<types::vector>()).peek().size()) };
-    }
-    return types::number { 0 };
+    return types::number { static_cast<int>(args[0].to_iterable().size()) };
   }
 
   static type list(std::span<const type> args) noexcept {

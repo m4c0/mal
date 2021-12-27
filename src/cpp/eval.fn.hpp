@@ -5,6 +5,8 @@
 #include "log.hpp"
 #include "types.hpp"
 
+#include <iterator>
+
 namespace mal::evals::details {
   static auto fn_err(const char * msg) noexcept {
     return types::details::lambda_ret_t { {}, types::error { msg } };
@@ -48,12 +50,12 @@ namespace mal::evals {
     const auto & list = (*in).peek();
     if (list.size() != 3) return types::error { "fn* must have parameters and body" };
 
-    const std::vector<type> * params {};
-    if (list[1].is<types::list>()) params = &(*list[1].as<types::list>()).peek();
-    if (list[1].is<types::vector>()) params = &(*list[1].as<types::vector>()).peek();
-    if (params == nullptr) return types::error { "fn* parameters must be a list or vector" };
+    auto p_span = list[1].to_iterable();
+    std::vector<type> params;
+    params.reserve(p_span.size());
+    std::copy(p_span.begin(), p_span.end(), std::back_inserter(params));
 
     log::debug() << "fn* " << oe.get() << "\n";
-    return types::lambda { 0, details::fn_lambda(oe, *params, list[2]) };
+    return types::lambda { 0, details::fn_lambda(oe, params, list[2]) };
   }
 }
