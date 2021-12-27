@@ -3,6 +3,7 @@
 #include "env.hpp"
 #include "eval.fn.hpp"
 #include "eval.hpp"
+#include "eval.quasiquote.hpp"
 #include "eval_ast.hpp"
 #include "types.hpp"
 
@@ -89,7 +90,7 @@ namespace mal::impl {
     }
 
     iteration operator()(const types::list & in) noexcept {
-      if ((*in).begin() == (*in).end()) return { {}, in };
+      if (in.empty()) return { {}, in };
 
       auto first = (*in).begin()->to_symbol();
       if (first == "def!") return def(in);
@@ -98,6 +99,7 @@ namespace mal::impl {
       if (first == "if") return if_(in);
       if (first == "fn*") return { {}, evals::fn(m_e, in) };
       if (first == "quote") return quote(in);
+      if (first == "quasiquote") return { m_e, evals::quasiquote(in) };
 
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };

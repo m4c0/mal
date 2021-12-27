@@ -76,6 +76,16 @@ namespace mal::types::details {
     template<type_or_list... Args>
     explicit vector_holder(Args &&... args) : parent_t { build(std::forward<Args>(args)...) } {
     }
+
+    [[nodiscard]] const type & at(auto idx) const noexcept {
+      return (**this).at(idx);
+    }
+    [[nodiscard]] bool empty() const noexcept {
+      return (**this).empty();
+    }
+    [[nodiscard]] auto size() const noexcept {
+      return (**this).size();
+    }
   };
 
   template<typename Tp>
