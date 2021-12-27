@@ -13,8 +13,9 @@ namespace mal::evals::impl {
       return types::list { quote, ast };
     }
 
+    bool ast_is_vec = ast.is<types::vector>();
     auto ast_items = ast.to_iterable();
-    if (ast_items.size() == 2 && ast_items[0].to_symbol() == "unquote") {
+    if (!ast_is_vec && ast_items.size() == 2 && ast_items[0].to_symbol() == "unquote") {
       return ast_items[1];
     }
 
@@ -33,6 +34,11 @@ namespace mal::evals::impl {
         }
       }
       res = types::list { cons, quasiquote(elt), res };
+    }
+
+    if (ast_is_vec) {
+      const type vec = types::symbol { "vec" };
+      return types::list { vec, res };
     }
     return res;
   }
