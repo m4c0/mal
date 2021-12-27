@@ -31,11 +31,7 @@ namespace mal::evals::details {
           p = params[i + 1].to_symbol();
           if (p.empty()) return fn_err("fn* without a symbol parameter after &");
 
-          mal::list<type> l;
-          for (int j = i; j < args.size(); j++) {
-            l = l + args[j];
-          }
-          e->set(p, types::list { std::move(l) });
+          e->set(p, types::list { args.subspan(i) });
           break;
         }
         if (args.size() <= i) return fn_err("fn* argument list differs in size from actual call");
@@ -47,7 +43,7 @@ namespace mal::evals::details {
 }
 namespace mal::evals {
   [[nodiscard]] static type fn(const std::shared_ptr<env> & oe, const types::list & in) noexcept {
-    const auto & list = (*in).peek();
+    const auto & list = *in;
     if (list.size() != 3) return types::error { "fn* must have parameters and body" };
 
     auto p_span = list[1].to_iterable();

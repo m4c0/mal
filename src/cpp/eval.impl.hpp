@@ -19,7 +19,7 @@ namespace mal::impl {
     const std::shared_ptr<env> m_e;
 
     [[nodiscard]] iteration def(const types::list & in) const noexcept {
-      const auto & list = (*in).peek();
+      const auto & list = *in;
       if (list.size() != 3) return err("def! must have a symbol and a value");
 
       auto key = list[1].to_symbol();
@@ -34,7 +34,7 @@ namespace mal::impl {
     [[nodiscard]] iteration let(const types::list & in) noexcept {
       auto inner = std::make_shared<env>(m_e);
 
-      const auto & list = (*in).peek();
+      const auto & list = *in;
       if (list.size() != 3) return err("let* must have an env and an expression");
 
       auto e = list[1].to_iterable();
@@ -53,7 +53,7 @@ namespace mal::impl {
       return { inner, list[2] };
     }
     [[nodiscard]] iteration do_(const types::list & in) const noexcept {
-      const auto & list = (*in).peek();
+      const auto & list = *in;
       for (auto it = list.begin() + 1; it != list.end() - 1; ++it) {
         auto r = EVAL(*it, m_e);
         if (r.is_error()) return { {}, r };
@@ -61,7 +61,7 @@ namespace mal::impl {
       return { m_e, list.back() };
     }
     [[nodiscard]] iteration if_(const types::list & in) const noexcept {
-      const auto & list = (*in).peek();
+      const auto & list = *in;
       if (list.size() < 3 || list.size() > 4) {
         return err("if must have condition, true and optionally false");
       }
@@ -79,7 +79,7 @@ namespace mal::impl {
     }
 
     [[nodiscard]] static iteration quote(const types::list & in) noexcept {
-      const auto & list = (*in).peek();
+      const auto & list = *in;
       if (list.size() != 2) return err("quote requires a parameter");
       return { {}, list[1] };
     }
@@ -102,7 +102,7 @@ namespace mal::impl {
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };
 
-      const auto & list = (*evald.as<types::list>()).peek();
+      const auto & list = *evald.as<types::list>();
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);

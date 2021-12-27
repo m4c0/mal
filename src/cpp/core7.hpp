@@ -2,18 +2,19 @@
 
 #include "core.hpp"
 
+#include <iterator>
+
 namespace mal::core {
   static type cons(std::span<const type> args) noexcept {
     if (args.size() != 2) return types::error { "cons needs a value and a list" };
-
-    auto res = mal::list<type> {} + args[0] + args[1].to_iterable();
-    return types::list { std::move(res) };
+    return types::list { args[0], args[1].to_iterable() };
   }
 
   static type concat(std::span<const type> args) noexcept {
-    mal::list<type> res {};
+    std::vector<type> res {};
     for (const auto & arg : args) {
-      res = res + arg.to_iterable();
+      auto it = arg.to_iterable();
+      std::copy(it.begin(), it.end(), std::back_inserter(res));
     }
     return types::list { std::move(res) };
   }

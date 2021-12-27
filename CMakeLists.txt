@@ -31,6 +31,7 @@ endfunction()
 
 function(mal_cpp_step NAME FILE)
   mal_step("cpp" ${NAME} ${FILE})
+  target_sources("cpp.${NAME}" PUBLIC src/cpp/types.holders.cpp)
 endfunction()
 
 function(mal_llvm_step NAME FILE)

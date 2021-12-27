@@ -25,7 +25,7 @@ namespace mal {
       return nullptr;
     }
     type operator()(list<type> l) const noexcept {
-      return { types::list { std::move(l) } };
+      return { types::list { l.take() } };
     }
     type operator()(parser::token<parser::kw> l) const noexcept {
       return { types::keyword { l } };

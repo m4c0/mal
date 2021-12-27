@@ -79,12 +79,7 @@ namespace mal::core {
   }
 
   static type list(std::span<const type> args) noexcept {
-    mal::list<type> res {};
-    for (const auto & a : args) {
-      res = res + a;
-    }
-
-    return types::list { std::move(res) };
+    return types::list { args };
   }
 
   static type equal(std::span<const type> args) noexcept {
@@ -139,11 +134,8 @@ namespace mal::core {
 
     auto atom = args[0].as<types::atom>();
 
-    mal::list<type> call;
-    call = call + args[1];
-    call = call + *atom;
-    call = call + args.subspan(2);
-    return { {}, atom.reset(EVAL(types::list { std::move(call) }, env)) };
+    types::list res { args[1], *atom, args.subspan(2) };
+    return { {}, atom.reset(EVAL(res, env)) };
   }
 
   static void setup_step2_funcs(auto & e) {
@@ -189,5 +181,23 @@ namespace mal::core {
     e->set("swap!", types::lambda { 0, swap });
 
     rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);
+  }
+
+  [[nodiscard]] static bool setup_argv(int argc, char ** argv, auto rep, auto & e) noexcept {
+    std::span<char *> argn { argv, static_cast<size_t>(argc) };
+
+    std::vector<mal::type> arg_list;
+    for (int i = 2; i < argn.size(); i++) {
+      arg_list.push_back(mal::types::string { argn[i] });
+    }
+    e->set("*ARGV*", mal::types::list { arg_list });
+
+    if (argn.size() > 1) {
+      std::ostringstream os;
+      os << "(load-file \"" << argn[1] << "\")";
+      std::cout << rep(os.str(), e) << "\n";
+      return true;
+    }
+    return false;
   }
 }

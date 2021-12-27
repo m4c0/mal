@@ -3,15 +3,13 @@
 #include "types.holders.hpp"
 
 #include <functional>
+#include <iterator>
 #include <span>
 #include <utility>
 #include <variant>
 
 namespace mal {
   class env;
-}
-namespace mal::types {
-  class type;
 }
 namespace mal::types::details {
   struct lambda_ret_t;
@@ -24,11 +22,11 @@ namespace mal::types {
     using holder::holder;
   };
 
-  struct list : details::heavy_holder<mal::list<type>> {
-    using heavy_holder::heavy_holder;
+  struct list : details::vector_holder<list> {
+    using vector_holder::vector_holder;
   };
-  struct vector : details::heavy_holder<std::vector<type>> {
-    using heavy_holder::heavy_holder;
+  struct vector : details::vector_holder<vector> {
+    using vector_holder::vector_holder;
   };
 
   struct lambda : details::heavy_holder<details::lambda_t> {
@@ -123,7 +121,7 @@ namespace mal::types {
     }
     [[nodiscard]] std::span<const type> to_iterable() const noexcept {
       if (const auto * v = std::get_if<list>(&m_value)) {
-        return (**v).peek();
+        return **v;
       }
       if (const auto * v = std::get_if<vector>(&m_value)) {
         return **v;

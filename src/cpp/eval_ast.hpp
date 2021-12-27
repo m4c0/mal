@@ -27,14 +27,13 @@ namespace mal {
     }
 
     type operator()(const types::list & in) {
-      list<type> out;
+      std::vector<type> out;
       for (const auto & v : *in) {
         auto nv = EVAL(v, m_e);
         if (nv.is_error()) return nv;
-
-        out = out + std::move(nv);
+        out.push_back(nv);
       }
-      return types::list { std::move(out) };
+      return types::list { out };
     }
 
     type operator()(const types::vector & in) {
