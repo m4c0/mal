@@ -21,8 +21,8 @@ namespace mal {
     type operator()(int n) const noexcept {
       return { types::number { n } };
     }
-    type operator()(parser::nil n) const noexcept {
-      return n;
+    type operator()(parser::nil /*n*/) const noexcept {
+      return nullptr;
     }
     type operator()(list<type> l) const noexcept {
       return { types::list { std::move(l) } };

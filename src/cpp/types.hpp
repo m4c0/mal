@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mal/reader.hpp"
 #include "mal/str.hpp"
 #include "types.holders.hpp"
 
@@ -41,7 +40,7 @@ namespace mal::types {
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
   using list = details::heavy_holder<mal::list<type>>;
-  using nil = parser::nil;
+  using nil = nullptr_t;
   using number = details::holder<int>;
   using string = details::heavy_holder<str>;
   using symbol = details::token_holder<void>;
