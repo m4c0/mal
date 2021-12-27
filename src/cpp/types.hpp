@@ -24,6 +24,13 @@ namespace mal::types {
     using holder::holder;
   };
 
+  struct list : details::heavy_holder<mal::list<type>> {
+    using heavy_holder::heavy_holder;
+  };
+  struct vector : details::heavy_holder<mal::vector<type>> {
+    using heavy_holder::heavy_holder;
+  };
+
   struct lambda : details::heavy_holder<details::lambda_t> {
     explicit lambda(int /*marker*/, const details::lambda_t & fn) : heavy_holder { fn } {
     }
@@ -35,12 +42,10 @@ namespace mal::types {
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
-  using list = details::heavy_holder<mal::list<type>>;
   using nil = nullptr_t;
   using number = details::holder<int>;
   using string = details::heavy_holder<std::string>;
   using symbol = details::token_holder<void>;
-  using vector = details::heavy_holder<mal::vector<type>>;
 
   [[nodiscard]] static bool operator==(const lambda & /*a*/, const lambda & /*b*/) noexcept {
     return false;
