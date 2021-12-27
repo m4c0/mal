@@ -13,14 +13,20 @@ find_library(CLANG clang HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 find_library(CLANGPP clang-cpp HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 
+add_library(mal_defs INTERFACE)
+target_compile_features(mal_defs INTERFACE cxx_std_20)
+target_include_directories(mal_defs INTERFACE
+  ext/m4c0-stl/parser/inc
+  inc)
+
+add_library(mal_cpp STATIC src/cpp/types.holders.cpp)
+target_link_libraries(mal_cpp PUBLIC mal_defs)
+
 function(mal_step LANG NAME FILE)
   set(TARGET "${LANG}.${NAME}")
 
   add_executable(${TARGET} src/${LANG}/${NAME}.cpp)
-  target_compile_features(${TARGET} PRIVATE cxx_std_20)
-  target_include_directories(${TARGET} PRIVATE
-    ext/m4c0-stl/parser/inc
-    inc)
+  target_link_libraries(${TARGET} PUBLIC mal_defs)
 
   add_test(
     NAME ${TARGET}
@@ -31,7 +37,7 @@ endfunction()
 
 function(mal_cpp_step NAME FILE)
   mal_step("cpp" ${NAME} ${FILE})
-  target_sources("cpp.${NAME}" PUBLIC src/cpp/types.holders.cpp)
+  target_link_libraries("cpp.${NAME}" PRIVATE mal_cpp)
 endfunction()
 
 function(mal_llvm_step NAME FILE)
