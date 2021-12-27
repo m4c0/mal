@@ -168,6 +168,15 @@ namespace mal::types {
       }
       return "";
     }
+    [[nodiscard]] std::span<const type> to_iterable() const noexcept {
+      if (const auto * v = std::get_if<list>(&m_value)) {
+        return (**v).peek();
+      }
+      if (const auto * v = std::get_if<vector>(&m_value)) {
+        return (**v).peek();
+      }
+      return {};
+    }
   };
 }
 namespace mal::types::details {

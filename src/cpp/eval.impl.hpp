@@ -37,18 +37,15 @@ namespace mal::impl {
       const auto & list = (*in).peek();
       if (list.size() != 3) return err("let* must have an env and an expression");
 
-      const std::vector<type> * e {};
-      if (list[1].is<types::list>()) e = &(*list[1].as<types::list>()).peek();
-      if (list[1].is<types::vector>()) e = &(*list[1].as<types::vector>()).peek();
-      if (e == nullptr) return err("let* env must be a list");
+      auto e = list[1].to_iterable();
 
-      if (e->size() % 2 == 1) return err("let* env must have a balanced list of key and values");
+      if (e.size() % 2 == 1) return err("let* env must have a balanced list of key and values");
 
-      for (int i = 0; i < e->size(); i += 2) {
-        auto key = e->at(i).to_symbol();
+      for (int i = 0; i < e.size(); i += 2) {
+        auto key = e[i].to_symbol();
         if (key.empty()) return err("let* env can only have symbol as keys");
 
-        auto value = EVAL(e->at(i + 1), inner);
+        auto value = EVAL(e[i + 1], inner);
         if (value.is_error()) return { {}, value };
         inner->set(key, value);
       }
