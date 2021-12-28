@@ -1,4 +1,4 @@
-#include "core7.hpp"
+#include "core8.hpp"
 #include "env.hpp"
 #include "eval.hpp"
 #include "printer.hpp"
@@ -26,7 +26,7 @@ static auto readline(std::string & line) {
 }
 int main(int argc, char ** argv) {
   auto e = std::make_shared<mal::env>();
-  mal::core::setup_step7_funcs(rep, e);
+  mal::core::setup_step8_funcs(rep, e);
   if (mal::core::setup_argv(argc, argv, rep, e)) {
     return 0;
   }
