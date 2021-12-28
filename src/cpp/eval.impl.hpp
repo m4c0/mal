@@ -106,6 +106,8 @@ namespace mal::impl {
 
       const auto & list = *evald.as<types::list>();
 
+      if (!list.at(0).is<types::lambda>()) return err("Can't run that");
+
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);
       return (*oper)(args, m_e);
@@ -115,5 +117,4 @@ namespace mal::impl {
       return { {}, eval_ast { m_e }(in) };
     }
   };
-
 }
