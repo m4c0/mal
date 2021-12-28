@@ -40,10 +40,10 @@ namespace mal::core {
     return types::boolean { args.size() == 1 && args[0].is<types::nil>() };
   }
   static type is_true(std::span<const type> args) noexcept {
-    return types::boolean { args.size() == 1 && args[0].to_boolean() };
+    return types::boolean { args.size() == 1 && args[0].to_boolean(false) };
   }
   static type is_false(std::span<const type> args) noexcept {
-    return types::boolean { args.size() == 1 && !args[0].to_boolean() };
+    return types::boolean { args.size() == 1 && !args[0].to_boolean(false) };
   }
   static type is_symbol(std::span<const type> args) noexcept {
     return types::boolean { args.size() == 1 && args[0].is<types::symbol>() };

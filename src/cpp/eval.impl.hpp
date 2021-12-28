@@ -69,7 +69,7 @@ namespace mal::impl {
       auto res = EVAL(list[1], m_e);
       if (res.is_error()) return { {}, res };
 
-      if (res.to_boolean()) {
+      if (!res.is<types::nil>() && res.to_boolean(true)) {
         return { m_e, list[2] };
       }
       if (list.size() == 3) {
