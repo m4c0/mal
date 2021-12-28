@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core8.hpp"
+#include "printer.hpp"
 #include "types.hpp"
 
 namespace mal::core {
   static type throw_(std::span<const type> args) noexcept {
-    return {};
+    return types::error { std::string { "Error: " } + mal::pr_str(args[0], false) };
   }
   static type apply(std::span<const type> args) noexcept {
     return {};
