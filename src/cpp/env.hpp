@@ -2,6 +2,7 @@
 
 #include "types.hpp"
 
+#include <sstream>
 #include <unordered_map>
 #include <utility>
 
@@ -18,8 +19,11 @@ namespace mal {
     [[nodiscard]] type get(const std::string & key) const noexcept {
       auto it = m_data.find(key);
       if (it != m_data.end()) return it->second;
-      if (m_outer == nullptr) return types::error { key + " not found" };
-      return m_outer->get(key);
+      if (m_outer != nullptr) return m_outer->get(key);
+
+      std::ostringstream os;
+      os << "'" << key << "' not found";
+      return types::error { os.str() };
     }
 
     void set(const std::string & key, type val) noexcept {
