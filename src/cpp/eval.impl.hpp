@@ -5,13 +5,14 @@
 #include "eval.hpp"
 #include "eval.macro.hpp"
 #include "eval.quasiquote.hpp"
+#include "eval.trycatch.hpp"
 #include "eval_ast.hpp"
 #include "types.hpp"
 
 #include <utility>
 
 namespace mal::impl {
-  class eval : evals::macro {
+  class eval : evals::macro, evals::trycatch {
     using iteration = evals::iteration;
     static constexpr const auto err = evals::err;
 
@@ -101,6 +102,8 @@ namespace mal::impl {
       if (first == "quasiquote") return { m_e, evals::quasiquote(in) };
       if (first == "defmacro!") return defmacro(in, m_e);
       if (first == "macroexpand") return { {}, macroexpand(in.at(1), m_e) };
+      if (first == "try*") return try_(in, m_e);
+      if (first == "catch*") return catch_(in, m_e);
 
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };
