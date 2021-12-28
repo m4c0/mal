@@ -19,7 +19,10 @@ target_include_directories(mal_defs INTERFACE
   ext/m4c0-stl/parser/inc
   inc)
 
-add_library(mal_cpp STATIC src/cpp/types.holders.cpp)
+add_library(mal_cpp STATIC 
+  src/cpp/eval.impl.cpp
+  src/cpp/eval.macro.cpp
+  src/cpp/types.holders.cpp)
 target_link_libraries(mal_cpp PUBLIC mal_defs)
 
 function(mal_step LANG NAME FILE)

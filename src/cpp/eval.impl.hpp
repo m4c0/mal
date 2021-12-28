@@ -3,6 +3,7 @@
 #include "env.hpp"
 #include "eval.fn.hpp"
 #include "eval.hpp"
+#include "eval.macro.hpp"
 #include "eval.quasiquote.hpp"
 #include "eval_ast.hpp"
 #include "types.hpp"
@@ -10,12 +11,9 @@
 #include <utility>
 
 namespace mal::impl {
-  class eval {
-    using iteration = types::details::lambda_ret_t;
-
-    [[nodiscard]] static iteration err(const std::string & msg) noexcept {
-      return iteration { {}, types::error { msg } };
-    }
+  class eval : evals::macro {
+    using iteration = evals::iteration;
+    static constexpr const auto err = evals::err;
 
     const std::shared_ptr<env> m_e;
 
@@ -101,6 +99,7 @@ namespace mal::impl {
       if (first == "quote") return quote(in);
       if (first == "quasiquoteexpand") return { {}, evals::quasiquote(in) };
       if (first == "quasiquote") return { m_e, evals::quasiquote(in) };
+      if (first == "defmacro!") return defmacro(in, m_e);
 
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };
@@ -117,15 +116,4 @@ namespace mal::impl {
     }
   };
 
-}
-namespace mal {
-  static type EVAL(const type & in, std::shared_ptr<env> e) {
-    type var = in;
-    while (e) {
-      auto iter = var.visit(impl::eval { e });
-      e = iter.e;
-      var = iter.t;
-    }
-    return var;
-  }
 }
