@@ -100,6 +100,7 @@ namespace mal::impl {
       if (first == "quasiquoteexpand") return { {}, evals::quasiquote(in) };
       if (first == "quasiquote") return { m_e, evals::quasiquote(in) };
       if (first == "defmacro!") return defmacro(in, m_e);
+      if (first == "macroexpand") return macroexpand(in.at(1), m_e);
 
       auto evald = eval_ast { m_e }(in);
       if (evald.is_error()) return { {}, evald };

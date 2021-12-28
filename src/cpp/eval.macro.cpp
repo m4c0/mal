@@ -21,3 +21,20 @@ using namespace mal::evals;
   e->set(key, value);
   return { {}, value };
 }
+
+[[nodiscard]] static std::optional<mal::type> is_macro_call(const mal::type & ast, senv e) noexcept {
+  if (!ast.is<mal::types::list>()) return {};
+
+  const auto sym = ast.as<mal::types::list>().at(0).to_symbol();
+  auto res = e->get(sym);
+  if (res.is<mal::types::macro>()) return res;
+  return {};
+}
+[[nodiscard]] iteration macro::macroexpand(type ast, senv e) noexcept {
+  while (auto macro = is_macro_call(ast, e)) {
+    auto args = ast.to_iterable().subspan(1);
+    auto res = (**macro->as<types::macro>())(args, e);
+    ast = EVAL(res.t, res.e);
+  }
+  return { {}, ast };
+}
