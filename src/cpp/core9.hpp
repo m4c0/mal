@@ -36,6 +36,18 @@ namespace mal::core {
     });
     return { {}, types::list { res } };
   }
+  static type is_nil(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::nil>() };
+  }
+  static type is_true(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].to_boolean() };
+  }
+  static type is_false(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && !args[0].to_boolean() };
+  }
+  static type is_symbol(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::symbol>() };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -43,5 +55,10 @@ namespace mal::core {
     e->set("throw", types::lambda { throw_ });
     e->set("apply", types::lambda { 0, apply });
     e->set("map", types::lambda { 0, map });
+
+    e->set("nil?", types::lambda { is_nil });
+    e->set("true?", types::lambda { is_true });
+    e->set("false?", types::lambda { is_false });
+    e->set("symbol?", types::lambda { is_symbol });
   }
 }
