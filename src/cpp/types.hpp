@@ -5,6 +5,7 @@
 #include <functional>
 #include <iterator>
 #include <span>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
@@ -40,6 +41,7 @@ namespace mal::types {
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
+  using macro = details::holder<lambda>;
   using nil = nullptr_t;
   using number = details::holder<int>;
   using string = details::heavy_holder<std::string>;
@@ -49,12 +51,43 @@ namespace mal::types {
     return false;
   }
 
+  template<typename... Tps>
+  struct type_variant_vararg_helper {
+    using variant_t = std::variant<Tps...>;
+
+    template<typename Vis>
+    constexpr static const bool can_be_visited_by = (std::is_invocable_v<Vis, Tps> && ...);
+  };
+  using type_variant_helper = type_variant_vararg_helper<
+      nil,
+      atom,
+      boolean,
+      error,
+      hashmap,
+      number,
+      keyword,
+      lambda,
+      list,
+      string,
+      symbol,
+      vector>;
+  using type_variant_t = type_variant_helper::variant_t;
+
+  template<typename Tp>
+  concept subtype = requires(type_variant_t v) {
+    { std::get<std::decay_t<Tp>>(v) };
+  };
+  template<typename Vis>
+  concept type_visitor = type_variant_helper::can_be_visited_by<Vis>;
+
   class type {
-    std::variant<nil, atom, boolean, error, hashmap, number, keyword, lambda, list, string, symbol, vector> m_value {};
+    type_variant_t m_value {};
 
   public:
     constexpr type() = default;
-    type(auto v) : m_value(std::move(v)) { // NOLINT - we want the simplicity of implicit
+
+    template<subtype Tp>
+    type(Tp v) : m_value { std::move(v) } { // NOLINT - we want the simplicity of implicit
     }
 
     [[nodiscard]] bool operator==(const type & o) const noexcept {
@@ -90,7 +123,7 @@ namespace mal::types {
       return std::holds_alternative<list>(m_value) || std::holds_alternative<vector>(m_value);
     }
 
-    template<typename Visitor>
+    template<type_visitor Visitor>
     [[nodiscard]] auto visit(Visitor && v) const noexcept {
       return std::visit(std::forward<Visitor>(v), m_value);
     }
