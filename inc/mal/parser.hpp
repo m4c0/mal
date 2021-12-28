@@ -57,11 +57,13 @@ namespace mal::parser {
 
   static constexpr const auto symbol = tokenise<void>(other);
 
-  static constexpr const auto b_true = match("true") & true;
-  static constexpr const auto b_false = match("false") & false;
+  static constexpr const auto no_qmark = look_ahead(match_none_of("?")) | eof();
+
+  static constexpr const auto b_true = match("true") + no_qmark & true;
+  static constexpr const auto b_false = match("false") + no_qmark & false;
   static constexpr const auto boolean = b_true | b_false;
 
-  static constexpr const auto nill = skip(match("nil"));
+  static constexpr const auto nill = skip(match("nil")) + no_qmark;
 
   template<typename Form>
   static constexpr auto list(Form && form) {
