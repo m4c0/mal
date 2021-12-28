@@ -51,6 +51,10 @@ namespace mal {
       return *kw;
     }
 
+    std::string operator()(const types::macro & /*l*/) const {
+      return "#<macro>";
+    }
+
     std::string operator()(const types::lambda & /*l*/) const {
       return "#<function>";
     }

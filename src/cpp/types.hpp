@@ -64,6 +64,7 @@ namespace mal::types {
       boolean,
       error,
       hashmap,
+      macro,
       number,
       keyword,
       lambda,
