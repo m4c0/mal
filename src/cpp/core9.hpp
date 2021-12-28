@@ -4,6 +4,9 @@
 #include "printer.hpp"
 #include "types.hpp"
 
+#include <algorithm>
+#include <iterator>
+
 namespace mal::core {
   static type throw_(std::span<const type> args) noexcept {
     return types::error { args[0] };
@@ -15,8 +18,23 @@ namespace mal::core {
 
     return { e, types::list { args[0], args.subspan(1, args.size() - 2), args.back().to_iterable() } };
   }
-  static type map(std::span<const type> args) noexcept {
-    return {};
+  static types::details::lambda_ret_t map(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
+    if (args.size() != 2) return { {}, err("map requires at two arguments") };
+    if (!args[0].is<types::lambda>()) return { {}, err("map require a function as first argument") };
+    if (!args[1].is_iterable()) return { {}, err("map require a list/vector as last argument") };
+
+    const auto & fn = *args[0].as<types::lambda>();
+
+    auto values = args[1].to_iterable();
+
+    std::vector<type> res;
+    res.reserve(values.size());
+
+    std::transform(values.begin(), values.end(), std::back_inserter(res), [&e, &fn](const auto & v) {
+      auto res = fn(std::span { &v, 1 }, e);
+      return EVAL(res.t, res.e);
+    });
+    return { {}, types::list { res } };
   }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
@@ -24,6 +42,6 @@ namespace mal::core {
 
     e->set("throw", types::lambda { throw_ });
     e->set("apply", types::lambda { 0, apply });
-    e->set("map", types::lambda { map });
+    e->set("map", types::lambda { 0, map });
   }
 }
