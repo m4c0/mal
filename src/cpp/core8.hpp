@@ -29,5 +29,18 @@ namespace mal::core {
     e->set("nth", types::lambda { nth });
     e->set("first", types::lambda { first });
     e->set("rest", types::lambda { rest });
+
+    constexpr const auto * const cond = R"--(
+      (defmacro! cond
+        (fn* (& xs)
+          (if (> (count xs) 0)
+              (list
+                'if
+                (first xs)
+                (if (> (count xs) 1)
+                  (nth xs 1)
+                  (throw "odd number of forms to cond"))
+                (cons 'cond (rest (rest xs))))))))--";
+    rep(cond, e);
   }
 }
