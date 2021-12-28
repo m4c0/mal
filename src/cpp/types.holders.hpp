@@ -1,5 +1,6 @@
 #pragma once
 
+#include "log.hpp"
 #include "mal/parser.hpp"
 
 #include <iterator>
@@ -57,6 +58,7 @@ namespace mal::types::details {
 
   void push_back(std::vector<type> & v, const type & t) noexcept;
   void push_back(std::vector<type> & v, std::span<const type> t) noexcept;
+  const type & oob() noexcept;
 
   template<typename Self>
   class vector_holder : public heavy_holder<std::vector<type>> {
@@ -78,6 +80,10 @@ namespace mal::types::details {
     }
 
     [[nodiscard]] const type & at(auto idx) const noexcept {
+      if (idx >= size()) {
+        log::debug() << "OOB accessing element at " << idx << "\n";
+        return oob();
+      }
       return (**this).at(idx);
     }
     [[nodiscard]] bool empty() const noexcept {

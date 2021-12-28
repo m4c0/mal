@@ -9,3 +9,8 @@ void mal::types::details::push_back(std::vector<mal::type> & v, const mal::type 
 void mal::types::details::push_back(std::vector<mal::type> & v, std::span<const mal::type> t) noexcept {
   std::copy(t.begin(), t.end(), std::back_inserter(v));
 }
+
+static const mal::type oob {};
+const mal::type & mal::types::details::oob() noexcept {
+  return ::oob;
+}
