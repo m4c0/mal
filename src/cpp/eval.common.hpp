@@ -7,7 +7,7 @@ namespace mal::evals {
   using form_input = const types::list &;
   using senv = const std::shared_ptr<env> &;
 
-  [[nodiscard]] static iteration err(const std::string & msg) noexcept {
-    return iteration { {}, types::error { msg } };
+  [[nodiscard]] static iteration err_i(const std::string & msg) noexcept {
+    return iteration { {}, err(msg) };
   }
 }

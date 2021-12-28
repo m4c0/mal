@@ -6,7 +6,7 @@
 
 namespace mal::core {
   static type throw_(std::span<const type> args) noexcept {
-    return types::error { std::string { "Error: " } + mal::pr_str(args[0], false) };
+    return types::error { args[0] };
   }
   static type apply(std::span<const type> args) noexcept {
     return {};
@@ -16,7 +16,7 @@ namespace mal::core {
   }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
-    setup_step7_funcs(rep, e);
+    setup_step8_funcs(rep, e);
 
     e->set("throw", types::lambda { throw_ });
     e->set("apply", types::lambda { apply });

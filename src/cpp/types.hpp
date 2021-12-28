@@ -19,8 +19,11 @@ namespace mal::types::details {
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
-  struct error : details::holder<std::string> {
-    using holder::holder;
+  struct atom : details::heavy_holder<type> {
+    using heavy_holder::heavy_holder;
+  };
+  struct error : details::heavy_holder<type> {
+    using heavy_holder::heavy_holder;
   };
 
   struct list : details::vector_holder<list> {
@@ -37,7 +40,6 @@ namespace mal::types {
     }
   };
 
-  using atom = details::heavy_holder<type>;
   using boolean = details::holder<bool>;
   using hashmap = details::heavy_holder<mal::hashmap<type>>;
   using keyword = details::token_holder<parser::kw>;
@@ -178,4 +180,8 @@ namespace mal::types::details {
 }
 namespace mal {
   using type = types::type;
+
+  [[nodiscard]] static type err(const std::string & msg) noexcept {
+    return types::error { types::string { msg } };
+  }
 }

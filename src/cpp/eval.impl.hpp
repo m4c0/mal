@@ -14,16 +14,16 @@
 namespace mal::impl {
   class eval : evals::macro, evals::trycatch {
     using iteration = evals::iteration;
-    static constexpr const auto err = evals::err;
+    static constexpr const auto err_i = evals::err_i;
 
     const std::shared_ptr<env> m_e;
 
     [[nodiscard]] iteration def(const types::list & in) const noexcept {
       const auto & list = *in;
-      if (list.size() != 3) return err("def! must have a symbol and a value");
+      if (list.size() != 3) return err_i("def! must have a symbol and a value");
 
       auto key = list[1].to_symbol();
-      if (key.empty()) return err("def! can only be called for symbols");
+      if (key.empty()) return err_i("def! can only be called for symbols");
 
       log::debug() << "def! " << m_e.get() << " " << key << "\n";
 
@@ -35,15 +35,15 @@ namespace mal::impl {
       auto inner = std::make_shared<env>(m_e);
 
       const auto & list = *in;
-      if (list.size() != 3) return err("let* must have an env and an expression");
+      if (list.size() != 3) return err_i("let* must have an env and an expression");
 
       auto e = list[1].to_iterable();
 
-      if (e.size() % 2 == 1) return err("let* env must have a balanced list of key and values");
+      if (e.size() % 2 == 1) return err_i("let* env must have a balanced list of key and values");
 
       for (int i = 0; i < e.size(); i += 2) {
         auto key = e[i].to_symbol();
-        if (key.empty()) return err("let* env can only have symbol as keys");
+        if (key.empty()) return err_i("let* env can only have symbol as keys");
 
         auto value = EVAL(e[i + 1], inner);
         if (value.is_error()) return { {}, value };
@@ -63,7 +63,7 @@ namespace mal::impl {
     [[nodiscard]] iteration if_(const types::list & in) const noexcept {
       const auto & list = *in;
       if (list.size() < 3 || list.size() > 4) {
-        return err("if must have condition, true and optionally false");
+        return err_i("if must have condition, true and optionally false");
       }
 
       auto res = EVAL(list[1], m_e);
@@ -80,7 +80,7 @@ namespace mal::impl {
 
     [[nodiscard]] static iteration quote(const types::list & in) noexcept {
       const auto & list = *in;
-      if (list.size() != 2) return err("quote requires a parameter");
+      if (list.size() != 2) return err_i("quote requires a parameter");
       return { {}, list[1] };
     }
 
@@ -110,7 +110,7 @@ namespace mal::impl {
 
       const auto & list = *evald.as<types::list>();
 
-      if (!list.at(0).is<types::lambda>()) return err("Can't run that");
+      if (!list.at(0).is<types::lambda>()) return err_i("Can't run that");
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);

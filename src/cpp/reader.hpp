@@ -43,6 +43,6 @@ namespace mal {
 
   static auto read_str(const std::string & line) {
     auto res = parser::read_str(line, reader {});
-    return res ? std::move(*res) : types::error { "EOF" };
+    return res ? std::move(*res) : err("EOF");
   }
 }

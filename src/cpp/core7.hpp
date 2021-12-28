@@ -6,7 +6,7 @@
 
 namespace mal::core {
   static type cons(std::span<const type> args) noexcept {
-    if (args.size() != 2) return types::error { "cons needs a value and a list" };
+    if (args.size() != 2) return err("cons needs a value and a list");
     return types::list { args[0], args[1].to_iterable() };
   }
 
@@ -20,9 +20,9 @@ namespace mal::core {
   }
 
   static type vec(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "vec needs an interable" };
+    if (args.size() != 1) return err("vec needs an interable");
     if (args[0].is<types::vector>()) return args[0];
-    if (!args[0].is<types::list>()) return types::error { "vec can't work on this" };
+    if (!args[0].is<types::list>()) return err("vec can't work on this");
     return types::vector { args[0].to_iterable() };
   }
 

@@ -23,7 +23,7 @@ namespace mal {
 
       std::ostringstream os;
       os << "'" << key << "' not found";
-      return types::error { os.str() };
+      return err(os.str());
     }
 
     void set(const std::string & key, type val) noexcept {

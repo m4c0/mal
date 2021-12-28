@@ -49,7 +49,7 @@ namespace mal::evals::impl {
 namespace mal::evals {
   [[nodiscard]] static type quasiquote(const types::list & in) noexcept {
     std::span<const type> list = *in;
-    if (list.size() != 2) return types::error { "quasiquote requires a single argument" };
+    if (list.size() != 2) return err("quasiquote requires a single argument");
     return impl::quasiquote(in.at(1));
   }
 }

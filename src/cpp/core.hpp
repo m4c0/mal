@@ -16,7 +16,7 @@ namespace mal::core::details {
   template<typename Op>
   [[nodiscard]] static auto bool_bifunc(Op && op) {
     return [op](std::span<const type> args) noexcept -> type {
-      if (args.size() != 2) return types::error { "Operation requires two operands" };
+      if (args.size() != 2) return err("Operation requires two operands");
 
       int a = args[0].to_int();
       int b = args[1].to_int();
@@ -26,7 +26,7 @@ namespace mal::core::details {
   template<typename Op>
   [[nodiscard]] static auto int_bifunc(Op && op) {
     return [op](std::span<const type> args) noexcept -> type {
-      if (args.size() < 2) return types::error { "Operation requires at least two operands" };
+      if (args.size() < 2) return err("Operation requires at least two operands");
 
       int i = args[0].to_int();
       int res = std::accumulate(args.begin() + 1, args.end(), i, [op](int a, const auto & b) noexcept {
@@ -83,26 +83,26 @@ namespace mal::core {
   }
 
   static type equal(std::span<const type> args) noexcept {
-    if (args.size() != 2) return types::error { "Can only compare two values" };
+    if (args.size() != 2) return err("Can only compare two values");
     return types::boolean { args[0] == args[1] };
   }
 
   static auto eval(const std::shared_ptr<env> & e) noexcept {
     return [e](std::span<const type> args, auto /*call_env*/) noexcept -> types::details::lambda_ret_t {
-      if (args.size() != 1) return { {}, types::error { "Can only eval a single value" } };
+      if (args.size() != 1) return { {}, err("Can only eval a single value") };
       log::debug() << "eval " << e.get() << "\n";
       return { e, args[0] };
     };
   }
   static type read_string(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "Can only read a single string" };
+    if (args.size() != 1) return err("Can only read a single string");
     return read_str({ args[0].to_string() });
   }
   static type slurp(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "Can only slurp a single file" };
+    if (args.size() != 1) return err("Can only slurp a single file");
 
     std::ifstream in { args[0].to_string() };
-    if (!in) return types::error { "Failure to slurp file" };
+    if (!in) return err("Failure to slurp file");
 
     std::ostringstream os {};
     os << in.rdbuf();
@@ -110,27 +110,27 @@ namespace mal::core {
   }
 
   static type atom(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "Can only atomise a single value" };
+    if (args.size() != 1) return err("Can only atomise a single value");
     return types::atom { args[0] };
   }
   static type is_atom(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "Can only test a single value" };
+    if (args.size() != 1) return err("Can only test a single value");
     return types::boolean { args[0].is<types::atom>() };
   }
   static type deref(std::span<const type> args) noexcept {
-    if (args.size() != 1) return types::error { "Can only deref a single value" };
-    if (!args[0].is<types::atom>()) return types::error { "deref requires an atom" };
+    if (args.size() != 1) return err("Can only deref a single value");
+    if (!args[0].is<types::atom>()) return err("deref requires an atom");
     return *(args[0].as<types::atom>());
   }
   static type reset(std::span<const type> args) noexcept {
-    if (args.size() != 2) return types::error { "reset! needs an atom and a value" };
-    if (!args[0].is<types::atom>()) return types::error { "reset! requires an atom" };
+    if (args.size() != 2) return err("reset! needs an atom and a value");
+    if (!args[0].is<types::atom>()) return err("reset! requires an atom");
     return args[0].as<types::atom>().reset(args[1]);
   }
   static types::details::lambda_ret_t swap(std::span<const type> args, const std::shared_ptr<env> & env) noexcept {
-    if (args.size() < 2) return { {}, types::error { "swap! needs at least a atom and a function" } };
-    if (!args[0].is<types::atom>()) return { {}, types::error { "swap! requires an atom" } };
-    if (!args[1].is<types::lambda>()) return { {}, types::error { "swap! requires a function" } };
+    if (args.size() < 2) return { {}, err("swap! needs at least a atom and a function") };
+    if (!args[0].is<types::atom>()) return { {}, err("swap! requires an atom") };
+    if (!args[1].is<types::lambda>()) return { {}, err("swap! requires a function") };
 
     auto atom = args[0].as<types::atom>();
 
