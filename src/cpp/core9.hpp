@@ -99,11 +99,11 @@ namespace mal::core {
     return merge(*args[0].as<types::hashmap>(), args.subspan(1));
   }
   static type dissoc(std::span<const type> args) noexcept {
-    if (args.size() != 2) return err("dissoc requires a map plus a list of keys");
+    if (args.size() < 2) return err("dissoc requires a map plus keys");
     if (!args[0].is<types::hashmap>()) return err("dissoc requires a map as first argument");
 
     auto res = *args[0].as<types::hashmap>();
-    for (const auto & arg : args[1].to_iterable()) {
+    for (const auto & arg : args.subspan(1)) {
       auto key = arg.to_map_key();
       if (!key) return err("keys must be strings or keywords");
       res.erase(*key);
