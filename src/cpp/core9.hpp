@@ -100,6 +100,29 @@ namespace mal::core {
     }
     return types::hashmap { std::move(map) };
   }
+  static type assoc(std::span<const type> args) noexcept {
+    if (args.size() % 2 == 0) return err("assoc requires a map plus an even number of arguments");
+    if (!args[0].is<types::hashmap>()) return err("assoc requires a map as first argument");
+
+    const auto & orig_map = *args[0].as<types::hashmap>();
+
+    std::unordered_map<std::string, type> map = orig_map;
+    for (int i = 1; i < args.size(); i += 2) {
+      const auto & key = args[i];
+      const auto & value = args[i + 1];
+
+      if (key.is<types::string>()) {
+        map[pr_str({ &key, 1 }).to_string()] = value;
+        continue;
+      }
+      if (key.is<types::keyword>()) {
+        map[*key.as<types::keyword>()] = value;
+        continue;
+      }
+      return err("hash-map keys must be strings or keywords");
+    }
+    return types::hashmap { std::move(map) };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -121,5 +144,6 @@ namespace mal::core {
     e->set("sequential?", types::lambda { is_sequential });
     e->set("hash-map", types::lambda { hashmap });
     e->set("map?", types::lambda { is_map });
+    e->set("assoc", types::lambda { assoc });
   }
 }
