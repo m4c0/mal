@@ -27,11 +27,11 @@ add_library(mal_cpp STATIC
   src/cpp/types.holders.cpp)
 target_link_libraries(mal_cpp PUBLIC mal_defs)
 
-function(mal_step_test TEST_NAME MAL_FILE CMD_ARGS)
+function(mal_step_test TEST_NAME MAL_FILE)
   add_test(
     NAME ${TEST_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests
-    COMMAND ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${CMD_ARGS}
+    COMMAND ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${ARGN}
     )
 endfunction()
 
@@ -47,6 +47,7 @@ endfunction()
 function(mal_cpp_step NAME FILE)
   mal_step("cpp" ${NAME} ${FILE})
   target_link_libraries("cpp.${NAME}" PRIVATE mal_cpp)
+  mal_step_test("cpp.stepA.${NAME}" "${NAME}_${FILE}" $<TARGET_FILE:cpp.stepA> ../mal/${NAME}_${FILE}.mal)
 endfunction()
 
 function(mal_llvm_step NAME FILE)
