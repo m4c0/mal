@@ -41,7 +41,7 @@ namespace mal::types {
   };
 
   using boolean = details::holder<bool>;
-  using hashmap = details::heavy_holder<mal::hashmap<type>>;
+  using hashmap = details::heavy_holder<std::unordered_map<std::string, type>>;
   using keyword = details::token_holder<parser::kw>;
   using macro = details::holder<lambda>;
   using nil = nullptr_t;

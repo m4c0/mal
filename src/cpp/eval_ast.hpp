@@ -5,6 +5,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 namespace mal {
@@ -16,12 +17,11 @@ namespace mal {
     }
 
     type operator()(const types::hashmap & in) {
-      hashmap<type> out;
+      std::unordered_map<std::string, type> out;
       for (const auto & v : *in) {
         auto nv = EVAL(v.second, m_e);
         if (nv.is_error()) return nv;
-
-        out = out + hashmap_entry<type> { v.first, std::move(nv) };
+        out[v.first] = nv;
       }
       return types::hashmap { std::move(out) };
     }

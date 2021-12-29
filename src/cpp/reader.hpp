@@ -16,7 +16,7 @@ namespace mal {
       return { types::boolean { b } };
     }
     type operator()(hashmap<type> l) const noexcept {
-      return { types::hashmap { std::move(l) } };
+      return { types::hashmap { std::move(l.take()) } };
     }
     type operator()(int n) const noexcept {
       return { types::number { n } };
