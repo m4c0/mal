@@ -1,5 +1,6 @@
 #pragma once
 
+#include "printer.hpp"
 #include "types.holders.hpp"
 
 #include <functional>
@@ -136,6 +137,15 @@ namespace mal::types {
         return **v;
       }
       return def;
+    }
+    [[nodiscard]] std::optional<std::string> to_map_key() const noexcept {
+      if (const auto * v = std::get_if<string>(&m_value)) {
+        return pr_str(*this);
+      }
+      if (const auto * v = std::get_if<keyword>(&m_value)) {
+        return *as<types::keyword>();
+      }
+      return {};
     }
     [[nodiscard]] int to_int() const noexcept {
       if (const auto * v = std::get_if<number>(&m_value)) {

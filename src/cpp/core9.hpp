@@ -83,18 +83,9 @@ namespace mal::core {
 
   static type merge(std::unordered_map<std::string, type> map, std::span<const type> args) noexcept {
     for (int i = 0; i < args.size(); i += 2) {
-      const auto & key = args[i];
-      const auto & value = args[i + 1];
-
-      if (key.is<types::string>()) {
-        map[pr_str({ &key, 1 }).to_string()] = value;
-        continue;
-      }
-      if (key.is<types::keyword>()) {
-        map[*key.as<types::keyword>()] = value;
-        continue;
-      }
-      return err("keys must be strings or keywords");
+      auto key = args[i].to_map_key();
+      if (!key) return err("keys must be strings or keywords");
+      map[*key] = args[i + 1];
     }
     return types::hashmap { std::move(map) };
   }
@@ -106,6 +97,20 @@ namespace mal::core {
     if (args.size() % 2 == 0) return err("assoc requires a map plus an even number of arguments");
     if (!args[0].is<types::hashmap>()) return err("assoc requires a map as first argument");
     return merge(*args[0].as<types::hashmap>(), args.subspan(1));
+  }
+
+  static type get(std::span<const type> args) noexcept {
+    if (args.size() != 2) return err("get requires a map and a key");
+    if (args[0].is<types::nil>()) return args[0]; // why???
+    if (!args[0].is<types::hashmap>()) return err("get requires a map as first argument");
+
+    auto key = args[1].to_map_key();
+    if (!key) return err("keys must be strings or keywords");
+
+    const auto & map = *args[0].as<types::hashmap>();
+    auto it = map.find(*key);
+    if (it == map.end()) return types::nil {};
+    return it->second;
   }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
@@ -129,5 +134,7 @@ namespace mal::core {
     e->set("hash-map", types::lambda { hashmap });
     e->set("map?", types::lambda { is_map });
     e->set("assoc", types::lambda { assoc });
+    // e->set("dissoc", types::lambda { dissoc });
+    e->set("get", types::lambda { get });
   }
 }
