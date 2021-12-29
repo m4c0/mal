@@ -80,10 +80,8 @@ namespace mal::core {
   static type vector(std::span<const type> args) noexcept {
     return types::vector { args };
   }
-  static type hashmap(std::span<const type> args) noexcept {
-    if (args.size() % 2 == 1) return err("hash-map requires an even number of arguments");
 
-    std::unordered_map<std::string, type> map;
+  static type merge(std::unordered_map<std::string, type> map, std::span<const type> args) noexcept {
     for (int i = 0; i < args.size(); i += 2) {
       const auto & key = args[i];
       const auto & value = args[i + 1];
@@ -96,32 +94,18 @@ namespace mal::core {
         map[*key.as<types::keyword>()] = value;
         continue;
       }
-      return err("hash-map keys must be strings or keywords");
+      return err("keys must be strings or keywords");
     }
     return types::hashmap { std::move(map) };
+  }
+  static type hashmap(std::span<const type> args) noexcept {
+    if (args.size() % 2 == 1) return err("hash-map requires an even number of arguments");
+    return merge({}, args);
   }
   static type assoc(std::span<const type> args) noexcept {
     if (args.size() % 2 == 0) return err("assoc requires a map plus an even number of arguments");
     if (!args[0].is<types::hashmap>()) return err("assoc requires a map as first argument");
-
-    const auto & orig_map = *args[0].as<types::hashmap>();
-
-    std::unordered_map<std::string, type> map = orig_map;
-    for (int i = 1; i < args.size(); i += 2) {
-      const auto & key = args[i];
-      const auto & value = args[i + 1];
-
-      if (key.is<types::string>()) {
-        map[pr_str({ &key, 1 }).to_string()] = value;
-        continue;
-      }
-      if (key.is<types::keyword>()) {
-        map[*key.as<types::keyword>()] = value;
-        continue;
-      }
-      return err("hash-map keys must be strings or keywords");
-    }
-    return types::hashmap { std::move(map) };
+    return merge(*args[0].as<types::hashmap>(), args.subspan(1));
   }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
