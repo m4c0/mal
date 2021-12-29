@@ -22,5 +22,6 @@ namespace mal::core {
     setup_step9_funcs(rep, e);
 
     e->set("readline", types::lambda { readline });
+    e->set("*host-language*", types::string { "c++" });
   }
 }

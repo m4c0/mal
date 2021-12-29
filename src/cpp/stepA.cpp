@@ -7,5 +7,5 @@
 int main(int argc, char ** argv) {
   auto e = std::make_shared<mal::env>();
   mal::core::setup_stepA_funcs(mal::rep, e);
-  mal::run(argc, argv, e);
+  mal::run_with_banner(argc, argv, e);
 }

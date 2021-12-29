@@ -35,4 +35,11 @@ namespace mal {
     }
     run(e);
   }
+  static void run_with_banner(int argc, char ** argv, const std::shared_ptr<env> & e) {
+    if (core::setup_argv(argc, argv, rep, e)) {
+      return;
+    }
+    rep(R"--((println (str "Mal [" *host-language* "]")))--", e);
+    run(e);
+  }
 }
