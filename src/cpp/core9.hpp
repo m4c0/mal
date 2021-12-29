@@ -98,6 +98,18 @@ namespace mal::core {
     if (!args[0].is<types::hashmap>()) return err("assoc requires a map as first argument");
     return merge(*args[0].as<types::hashmap>(), args.subspan(1));
   }
+  static type dissoc(std::span<const type> args) noexcept {
+    if (args.size() != 2) return err("dissoc requires a map plus a list of keys");
+    if (!args[0].is<types::hashmap>()) return err("dissoc requires a map as first argument");
+
+    auto res = *args[0].as<types::hashmap>();
+    for (const auto & arg : args[1].to_iterable()) {
+      auto key = arg.to_map_key();
+      if (!key) return err("keys must be strings or keywords");
+      res.erase(*key);
+    }
+    return types::hashmap { std::move(res) };
+  }
 
   static type get(std::span<const type> args) noexcept {
     if (args.size() != 2) return err("get requires a map and a key");
@@ -134,7 +146,7 @@ namespace mal::core {
     e->set("hash-map", types::lambda { hashmap });
     e->set("map?", types::lambda { is_map });
     e->set("assoc", types::lambda { assoc });
-    // e->set("dissoc", types::lambda { dissoc });
+    e->set("dissoc", types::lambda { dissoc });
     e->set("get", types::lambda { get });
   }
 }
