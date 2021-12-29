@@ -25,7 +25,10 @@ using namespace mal::evals;
 [[nodiscard]] static std::optional<mal::type> is_macro_call(const mal::type & ast, senv e) noexcept {
   if (!ast.is<mal::types::list>()) return {};
 
-  const auto sym = ast.as<mal::types::list>().at(0).to_symbol();
+  const auto & list = ast.as<mal::types::list>();
+  if (list.empty()) return {};
+
+  const auto sym = list.at(0).to_symbol();
   auto res = e->get(sym);
   if (res.is<mal::types::macro>()) return res;
   return {};

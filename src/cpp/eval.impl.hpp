@@ -109,6 +109,12 @@ namespace mal::impl {
       if (evald.is_error()) return { {}, evald };
 
       const auto & list = *evald.as<types::list>();
+      auto it = std::find_if(list.begin(), list.end(), [](auto t) {
+        return t.is_error();
+      });
+      if (it != list.end()) {
+        return { {}, *it };
+      }
 
       if (!list.at(0).is<types::lambda>()) return err_i("Can't run that");
 

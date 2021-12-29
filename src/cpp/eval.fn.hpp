@@ -11,13 +11,6 @@
 namespace mal::evals::details {
   static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
     return [oe, params, body](std::span<const type> args, auto /**/) -> types::details::lambda_ret_t {
-      auto it = std::find_if(args.begin(), args.end(), [](auto t) {
-        return t.is_error();
-      });
-      if (it != args.end()) {
-        return { {}, *it };
-      }
-
       auto e = std::make_shared<env>(oe);
 
       for (int i = 0; i < params.size(); i++) {
