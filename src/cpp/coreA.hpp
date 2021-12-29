@@ -17,11 +17,23 @@ namespace mal::core {
     if (!std::cin) return types::nil {};
     return types::string { line };
   }
+  static type fail(std::span<const type> /*args*/) noexcept {
+    return err("not implemented");
+  }
 
   static void setup_stepA_funcs(auto rep, auto & e) noexcept {
     setup_step9_funcs(rep, e);
 
     e->set("readline", types::lambda { readline });
     e->set("*host-language*", types::string { "c++" });
+
+    e->set("time-ms", types::lambda { fail });
+    e->set("meta", types::lambda { fail });
+    e->set("with-meta", types::lambda { fail });
+    e->set("fn?", types::lambda { fail });
+    e->set("string?", types::lambda { fail });
+    e->set("number?", types::lambda { fail });
+    e->set("seq", types::lambda { fail });
+    e->set("conj", types::lambda { fail });
   }
 }
