@@ -27,17 +27,21 @@ add_library(mal_cpp STATIC
   src/cpp/types.holders.cpp)
 target_link_libraries(mal_cpp PUBLIC mal_defs)
 
+function(mal_step_test TEST_NAME MAL_FILE CMD_ARGS)
+  add_test(
+    NAME ${TEST_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests
+    COMMAND ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${CMD_ARGS}
+    )
+endfunction()
+
 function(mal_step LANG NAME FILE)
   set(TARGET "${LANG}.${NAME}")
 
   add_executable(${TARGET} src/${LANG}/${NAME}.cpp)
   target_link_libraries(${TARGET} PUBLIC mal_defs)
 
-  add_test(
-    NAME ${TARGET}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests
-    COMMAND ../../runtest.py --deferrable --optional ${NAME}_${FILE}.mal -- $<TARGET_FILE:${TARGET}>
-    )
+  mal_step_test(${TARGET} "${NAME}_${FILE}" $<TARGET_FILE:${TARGET}>)
 endfunction()
 
 function(mal_cpp_step NAME FILE)
