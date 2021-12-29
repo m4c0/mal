@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <unordered_map>
 
 namespace mal::core {
   static type throw_(std::span<const type> args) noexcept {
@@ -76,6 +77,29 @@ namespace mal::core {
     if (args[0].is<types::keyword>()) return args[0];
     return err("keyword requires a string argument");
   }
+  static type vector(std::span<const type> args) noexcept {
+    return types::vector { args };
+  }
+  static type hashmap(std::span<const type> args) noexcept {
+    if (args.size() % 2 == 1) return err("hash-map requires an even number of arguments");
+
+    std::unordered_map<std::string, type> map;
+    for (int i = 0; i < args.size(); i += 2) {
+      const auto & key = args[i];
+      const auto & value = args[i + 1];
+
+      if (key.is<types::string>()) {
+        map[pr_str({ &key, 1 }).to_string()] = value;
+        continue;
+      }
+      if (key.is<types::keyword>()) {
+        map[*key.as<types::keyword>()] = value;
+        continue;
+      }
+      return err("hash-map keys must be strings or keywords");
+    }
+    return types::hashmap { std::move(map) };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -92,8 +116,10 @@ namespace mal::core {
     e->set("symbol", types::lambda { symbol });
     e->set("keyword", types::lambda { keyword });
     e->set("keyword?", types::lambda { is_keyword });
+    e->set("vector", types::lambda { vector });
     e->set("vector?", types::lambda { is_vector });
     e->set("sequential?", types::lambda { is_sequential });
+    e->set("hash-map", types::lambda { hashmap });
     e->set("map?", types::lambda { is_map });
   }
 }
