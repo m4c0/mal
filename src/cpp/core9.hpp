@@ -52,6 +52,9 @@ namespace mal::core {
   static type is_symbol(std::span<const type> args) noexcept {
     return types::boolean { args.size() == 1 && args[0].is<types::symbol>() };
   }
+  static type is_keyword(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::keyword>() };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -64,5 +67,7 @@ namespace mal::core {
     e->set("true?", types::lambda { is_true });
     e->set("false?", types::lambda { is_false });
     e->set("symbol?", types::lambda { is_symbol });
+
+    e->set("keyword?", types::lambda { is_keyword });
   }
 }
