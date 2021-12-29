@@ -134,6 +134,32 @@ namespace mal::core {
     const auto & map = *args[0].as<types::hashmap>();
     return types::boolean { map.contains(*key) };
   }
+  static type keys(std::span<const type> args) noexcept {
+    if (args.size() != 1) return err("keys requires a hashmap");
+    if (!args[0].is<types::hashmap>()) return err("keys requires a hashmap");
+
+    const auto & map = *args[0].as<types::hashmap>();
+
+    std::vector<type> res;
+    res.reserve(map.size());
+    for (const auto & kv : map) {
+      res.emplace_back(read_str(kv.first));
+    }
+    return types::list { std::move(res) };
+  }
+  static type vals(std::span<const type> args) noexcept {
+    if (args.size() != 1) return err("vals requires a hashmap");
+    if (!args[0].is<types::hashmap>()) return err("vals requires a hashmap");
+
+    const auto & map = *args[0].as<types::hashmap>();
+
+    std::vector<type> res;
+    res.reserve(map.size());
+    for (const auto & kv : map) {
+      res.emplace_back(kv.second);
+    }
+    return types::list { std::move(res) };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -159,5 +185,7 @@ namespace mal::core {
     e->set("dissoc", types::lambda { dissoc });
     e->set("get", types::lambda { get });
     e->set("contains?", types::lambda { contains });
+    e->set("keys", types::lambda { keys });
+    e->set("vals", types::lambda { vals });
   }
 }
