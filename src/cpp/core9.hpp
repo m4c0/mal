@@ -55,6 +55,27 @@ namespace mal::core {
   static type is_keyword(std::span<const type> args) noexcept {
     return types::boolean { args.size() == 1 && args[0].is<types::keyword>() };
   }
+  static type is_sequential(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is_iterable() };
+  }
+  static type is_vector(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::vector>() };
+  }
+  static type is_map(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::hashmap>() };
+  }
+
+  static type symbol(std::span<const type> args) noexcept {
+    if (args.size() != 1) return err("symbol requires a string argument");
+    if (!args[0].is<types::string>()) return err("symbol requires a string argument");
+    return types::symbol { args[0].to_string() };
+  }
+  static type keyword(std::span<const type> args) noexcept {
+    if (args.size() != 1) return err("keyword requires a string argument");
+    if (args[0].is<types::string>()) return types::keyword { std::string { ":" } + args[0].to_string() };
+    if (args[0].is<types::keyword>()) return args[0];
+    return err("keyword requires a string argument");
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -68,6 +89,11 @@ namespace mal::core {
     e->set("false?", types::lambda { is_false });
     e->set("symbol?", types::lambda { is_symbol });
 
+    e->set("symbol", types::lambda { symbol });
+    e->set("keyword", types::lambda { keyword });
     e->set("keyword?", types::lambda { is_keyword });
+    e->set("vector?", types::lambda { is_vector });
+    e->set("sequential?", types::lambda { is_sequential });
+    e->set("map?", types::lambda { is_map });
   }
 }
