@@ -23,6 +23,7 @@ add_library(mal_cpp STATIC
   src/cpp/eval.impl.cpp
   src/cpp/eval.macro.cpp
   src/cpp/eval.trycatch.cpp
+  src/cpp/printer.cpp
   src/cpp/types.holders.cpp)
 target_link_libraries(mal_cpp PUBLIC mal_defs)
 
