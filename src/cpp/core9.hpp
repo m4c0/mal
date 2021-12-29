@@ -124,6 +124,16 @@ namespace mal::core {
     if (it == map.end()) return types::nil {};
     return it->second;
   }
+  static type contains(std::span<const type> args) noexcept {
+    if (args.size() != 2) return err("contains requires a map and a key");
+    if (!args[0].is<types::hashmap>()) return err("contains requires a map as first argument");
+
+    auto key = args[1].to_map_key();
+    if (!key) return err("keys must be strings or keywords");
+
+    const auto & map = *args[0].as<types::hashmap>();
+    return types::boolean { map.contains(*key) };
+  }
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
@@ -148,5 +158,6 @@ namespace mal::core {
     e->set("assoc", types::lambda { assoc });
     e->set("dissoc", types::lambda { dissoc });
     e->set("get", types::lambda { get });
+    e->set("contains?", types::lambda { contains });
   }
 }
