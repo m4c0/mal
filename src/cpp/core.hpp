@@ -133,9 +133,10 @@ namespace mal::core {
     if (!args[1].is<types::lambda>()) return { {}, err("swap! requires a function") };
 
     auto atom = args[0].as<types::atom>();
-
-    types::list res { args[1], *atom, args.subspan(2) };
-    return { {}, atom.reset(EVAL(res, env)) };
+    const auto & fn = args[1].as<types::lambda>();
+    types::list fn_args { *atom, args.subspan(2) };
+    auto res = (*fn)(std::span(*fn_args), env);
+    return { {}, atom.reset(EVAL(res.t, res.e)) };
   }
 
   static void setup_step2_funcs(auto & e) {
