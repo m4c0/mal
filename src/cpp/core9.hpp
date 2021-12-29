@@ -16,7 +16,9 @@ namespace mal::core {
     if (!args[0].is<types::lambda>()) return { {}, err("apply require a function as first argument") };
     if (!args.back().is_iterable()) return { {}, err("apply require a list/vector as last argument") };
 
-    return { e, types::list { args[0], args.subspan(1, args.size() - 2), args.back().to_iterable() } };
+    const auto & fn = *args[0].as<types::lambda>();
+    const auto fn_args = types::list { args.subspan(1, args.size() - 2), args.back().to_iterable() };
+    return fn(*fn_args, e);
   }
   static types::details::lambda_ret_t map(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
     if (args.size() != 2) return { {}, err("map requires at two arguments") };
@@ -30,10 +32,12 @@ namespace mal::core {
     std::vector<type> res;
     res.reserve(values.size());
 
-    std::transform(values.begin(), values.end(), std::back_inserter(res), [&e, &fn](const auto & v) {
-      auto res = fn(std::span { &v, 1 }, e);
-      return EVAL(res.t, res.e);
-    });
+    for (const auto & v : values) {
+      auto fn_res = fn(std::span { &v, 1 }, e);
+      auto new_v = EVAL(fn_res.t, fn_res.e);
+      if (new_v.is_error()) return { {}, new_v };
+      res.push_back(new_v);
+    }
     return { {}, types::list { res } };
   }
   static type is_nil(std::span<const type> args) noexcept {
