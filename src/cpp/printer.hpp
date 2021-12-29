@@ -27,7 +27,7 @@ namespace mal {
     }
 
     std::string operator()(const types::error & e) const {
-      return std::string { "ERROR: " } + (*e).visit(*this);
+      return (*e).visit(*this);
     }
 
     std::string operator()(const types::hashmap & h) const {

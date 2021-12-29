@@ -12,6 +12,7 @@ static auto READ(auto in) {
   return mal::read_str(in);
 }
 static auto PRINT(auto in) {
+  if (in.is_error()) return std::string { "Error: " } + mal::pr_str(in);
   return mal::pr_str(in);
 }
 
