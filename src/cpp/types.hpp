@@ -47,10 +47,14 @@ namespace mal::types {
   using macro = details::holder<lambda>;
   using nil = nullptr_t;
   using number = details::holder<int>;
+  using special = details::heavy_holder<std::function<details::lambda_ret_t(list, std::shared_ptr<env>)>>;
   using string = details::heavy_holder<std::string>;
   using symbol = details::token_holder<void>;
 
   [[nodiscard]] static bool operator==(const lambda & /*a*/, const lambda & /*b*/) noexcept {
+    return false;
+  }
+  [[nodiscard]] static bool operator==(const special & /*a*/, const special & /*b*/) noexcept {
     return false;
   }
 
@@ -72,6 +76,7 @@ namespace mal::types {
       keyword,
       lambda,
       list,
+      special,
       string,
       symbol,
       vector>;

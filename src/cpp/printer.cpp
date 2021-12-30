@@ -80,6 +80,10 @@ namespace {
       return std::to_string(*n);
     }
 
+    std::string operator()(const types::special & /*l*/) const {
+      return "#<special>";
+    }
+
     std::string operator()(const types::symbol & sym) const {
       return *sym;
     }

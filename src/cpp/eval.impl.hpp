@@ -126,9 +126,18 @@ namespace mal::impl {
         *v = v->visit(eval_ast { e });
         return {};
       }
-      if (v->to_iterable().empty()) return {};
+      auto args = v->to_iterable();
+      if (args.empty()) return {};
 
-      auto it = eval { e }.visit(v->as<types::list>());
+      auto spc = e->get(args[0].to_symbol());
+
+      iteration it;
+      if (spc.is<types::special>()) {
+        it = (*spc.as<types::special>())(v->as<types::list>(), e);
+      } else {
+        it = eval { e }.visit(v->as<types::list>());
+      }
+
       *v = it.t;
       return it.e;
     }
