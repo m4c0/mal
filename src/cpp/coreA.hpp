@@ -3,6 +3,7 @@
 #include "core9.hpp"
 #include "printer.hpp"
 
+#include <chrono>
 #include <string>
 
 namespace mal::core {
@@ -17,6 +18,20 @@ namespace mal::core {
     if (!std::cin) return types::nil {};
     return types::string { line };
   }
+  static type time(std::span<const type> /*args*/) noexcept {
+    auto epoch = std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
+    return types::number { static_cast<int>(millis) };
+  }
+  static type is_fn(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::lambda>() };
+  }
+  static type is_number(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::number>() };
+  }
+  static type is_string(std::span<const type> args) noexcept {
+    return types::boolean { args.size() == 1 && args[0].is<types::string>() };
+  }
   static type fail(std::span<const type> /*args*/) noexcept {
     return err("not implemented");
   }
@@ -27,12 +42,12 @@ namespace mal::core {
     e->set("readline", types::lambda { readline });
     e->set("*host-language*", types::string { "c++" });
 
-    e->set("time-ms", types::lambda { fail });
+    e->set("time-ms", types::lambda { time });
     e->set("meta", types::lambda { fail });
     e->set("with-meta", types::lambda { fail });
-    e->set("fn?", types::lambda { fail });
-    e->set("string?", types::lambda { fail });
-    e->set("number?", types::lambda { fail });
+    e->set("fn?", types::lambda { is_fn });
+    e->set("string?", types::lambda { is_string });
+    e->set("number?", types::lambda { is_number });
     e->set("seq", types::lambda { fail });
     e->set("conj", types::lambda { fail });
   }
