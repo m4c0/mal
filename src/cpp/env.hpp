@@ -30,8 +30,8 @@ namespace mal {
       m_data[key] = std::move(val);
     }
 
-    [[nodiscard]] type lookup(const types::symbol & s) const noexcept {
-      return get(*s);
+    [[nodiscard]] type lookup(const std::string & key) const noexcept {
+      return get(key);
     }
   };
 }

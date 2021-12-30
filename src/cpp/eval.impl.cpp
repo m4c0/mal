@@ -8,10 +8,7 @@ type mal::EVAL(const type & in, std::shared_ptr<env> e) {
   type var = in;
   while (e) {
     evals::macro::macroexpand(&var, e);
-
-    auto iter = var.visit(impl::eval { e });
-    e = iter.e;
-    var = iter.t;
+    e = impl::eval::visit(&var, e);
   }
   return var;
 }

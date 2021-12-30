@@ -84,13 +84,10 @@ namespace mal::impl {
       return { {}, list[1] };
     }
 
-  public:
     explicit eval(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
     }
 
-    iteration operator()(const types::list & in) noexcept {
-      if (in.empty()) return { {}, in };
-
+    iteration visit(const types::list & in) noexcept {
       auto first = (*in).begin()->to_symbol();
       if (first == "def!") return def(in);
       if (first == "let*") return let(in);
@@ -123,8 +120,17 @@ namespace mal::impl {
       return (*oper)(args, m_e);
     }
 
-    iteration operator()(const auto & in) const noexcept {
-      return { {}, eval_ast { m_e }(in) };
+  public:
+    [[nodiscard]] static std::shared_ptr<env> visit(type * v, const std::shared_ptr<env> & e) noexcept {
+      if (!v->is<types::list>()) {
+        *v = v->visit(eval_ast { e });
+        return {};
+      }
+      if (v->to_iterable().empty()) return {};
+
+      auto it = eval { e }.visit(v->as<types::list>());
+      *v = it.t;
+      return it.e;
     }
   };
 }

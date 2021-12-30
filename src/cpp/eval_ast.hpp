@@ -48,7 +48,7 @@ namespace mal {
     }
 
     type operator()(const types::symbol & in) {
-      return m_e->lookup(in);
+      return m_e->lookup(*in);
     }
 
     type operator()(const auto & in) {
