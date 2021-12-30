@@ -44,6 +44,21 @@ function(mal_step LANG NAME FILE)
   mal_step_test(${TARGET} "${NAME}_${FILE}" $<TARGET_FILE:${TARGET}>)
 endfunction()
 
+function(mal_perf_step LANG NAME)
+  add_custom_target(${LANG}.${NAME}
+    COMMAND ${LANG}.stepA ${NAME}.mal
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests)
+endfunction()
+function(mal_perf LANG)
+  mal_perf_step(${LANG} perf1)
+  mal_perf_step(${LANG} perf2)
+  mal_perf_step(${LANG} perf3)
+  add_custom_target(${LANG}.perf
+    DEPENDS ${LANG}.perf1
+    DEPENDS ${LANG}.perf2
+    DEPENDS ${LANG}.perf3)
+endfunction()
+
 function(mal_cpp_step NAME FILE)
   mal_step("cpp" ${NAME} ${FILE})
   target_link_libraries("cpp.${NAME}" PRIVATE mal_cpp)
@@ -68,6 +83,7 @@ mal_cpp_step(step7 quote)
 mal_cpp_step(step8 macros)
 mal_cpp_step(step9 try)
 mal_cpp_step(stepA mal)
+mal_perf(cpp)
 
 mal_llvm_step(step0 repl)
 mal_llvm_step(step1 read_print)
