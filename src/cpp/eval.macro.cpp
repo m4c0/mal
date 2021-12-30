@@ -33,11 +33,10 @@ using namespace mal::evals;
   if (res.is<mal::types::macro>()) return res;
   return {};
 }
-[[nodiscard]] mal::type macro::macroexpand(type ast, senv e) noexcept {
-  while (auto macro = is_macro_call(ast, e)) {
-    auto args = ast.to_iterable().subspan(1);
+void macro::macroexpand(type * ast, senv e) noexcept {
+  while (auto macro = is_macro_call(*ast, e)) {
+    auto args = ast->to_iterable().subspan(1);
     auto res = (**macro->as<types::macro>())(args, e);
-    ast = EVAL(res.t, res.e);
+    *ast = EVAL(res.t, res.e);
   }
-  return ast;
 }

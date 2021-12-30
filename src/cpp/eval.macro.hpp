@@ -6,6 +6,11 @@
 namespace mal::evals {
   struct macro {
     [[nodiscard]] static iteration defmacro(form_input in, senv e) noexcept;
-    [[nodiscard]] static type macroexpand(type ast, senv e) noexcept;
+    static void macroexpand(type * ast, senv e) noexcept;
+
+    static type macroexpand_form(type ast, senv e) noexcept {
+      macroexpand(&ast, e);
+      return ast;
+    }
   };
 }
