@@ -10,13 +10,8 @@
 
 namespace mal::impl {
   class eval {
-    const std::shared_ptr<env> m_e;
-
-    explicit eval(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
-    }
-
-    evals::iteration visit(const types::list & in) noexcept {
-      auto evald = eval_ast { m_e }(in);
+    static evals::iteration eval_list(type * v, evals::senv e) noexcept {
+      auto evald = v->visit(eval_ast { e });
       if (evald.is_error()) return { {}, evald };
 
       const auto & list = *evald.as<types::list>();
@@ -31,7 +26,7 @@ namespace mal::impl {
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);
-      return (*oper)(args, m_e);
+      return (*oper)(args, e);
     }
 
   public:
@@ -49,7 +44,7 @@ namespace mal::impl {
       if (spc.is<types::special>()) {
         it = (*spc.as<types::special>())(v->as<types::list>(), e);
       } else {
-        it = eval { e }.visit(v->as<types::list>());
+        it = eval_list(v, e);
       }
 
       *v = it.t;
