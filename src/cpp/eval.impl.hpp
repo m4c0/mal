@@ -10,23 +10,21 @@
 
 namespace mal::impl {
   class eval {
-    static evals::iteration eval_list(type * v, evals::senv e) noexcept {
-      auto evald = v->visit(eval_ast { e });
-      if (evald.is_error()) return { {}, evald };
+    static std::shared_ptr<env> eval_list(type * v, evals::senv e) noexcept {
+      *v = v->visit(eval_ast { e });
+      if (v->is_error()) return {};
 
-      const auto & list = *evald.as<types::list>();
-      auto it = std::find_if(list.begin(), list.end(), [](auto t) {
-        return t.is_error();
-      });
-      if (it != list.end()) {
-        return { {}, *it };
+      const auto & list = *v->as<types::list>();
+      if (!list.at(0).is<types::lambda>()) {
+        *v = err("Can't run that");
+        return {};
       }
-
-      if (!list.at(0).is<types::lambda>()) return evals::err_i("Can't run that");
 
       auto oper = list.at(0).as<types::lambda>();
       auto args = std::span(list).subspan(1);
-      return (*oper)(args, e);
+      auto res = (*oper)(args, e);
+      *v = res.t;
+      return res.e;
     }
 
   public:
@@ -43,12 +41,11 @@ namespace mal::impl {
       evals::iteration it;
       if (spc.is<types::special>()) {
         it = (*spc.as<types::special>())(v->as<types::list>(), e);
-      } else {
-        it = eval_list(v, e);
+        *v = it.t;
+        return it.e;
       }
 
-      *v = it.t;
-      return it.e;
+      return eval_list(v, e);
     }
   };
 }
