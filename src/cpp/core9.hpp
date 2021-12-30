@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core8.hpp"
+#include "eval.trycatch.hpp"
 #include "printer.hpp"
 #include "types.hpp"
 
@@ -163,6 +164,9 @@ namespace mal::core {
 
   static void setup_step9_funcs(auto rep, auto & e) noexcept {
     setup_step8_funcs(rep, e);
+
+    e->set("try*", types::special { evals::trycatch::try_ });
+    e->set("catch*", types::special { evals::trycatch::catch_ });
 
     e->set("throw", types::lambda { throw_ });
     e->set("apply", types::lambda { 0, apply });

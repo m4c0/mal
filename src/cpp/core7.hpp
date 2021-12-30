@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.hpp"
+#include "eval.quasiquote.hpp"
 
 #include <iterator>
 
@@ -28,6 +29,10 @@ namespace mal::core {
 
   static void setup_step7_funcs(auto rep, auto & e) {
     setup_step6_funcs(rep, e);
+
+    e->set("quote", types::special { evals::quote });
+    e->set("quasiquoteexpand", types::special { evals::quasiquoteexpand_form });
+    e->set("quasiquote", types::special { evals::quasiquote_form });
 
     e->set("cons", types::lambda { cons });
     e->set("concat", types::lambda { concat });

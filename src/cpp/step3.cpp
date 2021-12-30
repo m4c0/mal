@@ -25,7 +25,7 @@ static auto readline(std::string & line) {
 }
 int main() {
   auto e = std::make_shared<mal::env>();
-  mal::core::setup_step2_funcs(e);
+  mal::core::setup_step3_funcs(e);
 
   std::string line;
   while (readline(line)) {

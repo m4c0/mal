@@ -8,9 +8,10 @@ namespace mal::evals {
     [[nodiscard]] static iteration defmacro(form_input in, senv e) noexcept;
     static void macroexpand(type * ast, senv e) noexcept;
 
-    static type macroexpand_form(type ast, senv e) noexcept {
+    static iteration macroexpand_form(form_input in, senv e) noexcept {
+      type ast = in.at(1);
       macroexpand(&ast, e);
-      return ast;
+      return { {}, ast };
     }
   };
 }

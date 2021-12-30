@@ -1,6 +1,8 @@
 #pragma once
 
+#include "eval.fn.hpp"
 #include "eval.hpp"
+#include "eval.specials.hpp"
 #include "log.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
@@ -146,8 +148,20 @@ namespace mal::core {
     e->set("/", types::lambda { details::int_bifunc(std::divides<>()) });
   }
 
-  static void setup_step4_funcs(auto rep, auto & e) {
+  static void setup_step3_funcs(auto & e) {
     setup_step2_funcs(e);
+
+    e->set("def!", types::special { evals::def });
+    e->set("let*", types::special { evals::let });
+  }
+
+  static void setup_step4_funcs(auto rep, auto & e) {
+    setup_step3_funcs(e);
+
+    e->set("do", types::special { evals::do_ });
+    e->set("if", types::special { evals::if_ });
+    e->set("fn*", types::special { evals::fn });
+
     e->set("list", types::lambda { list });
     e->set("list?", types::lambda { is_list });
     e->set("empty?", types::lambda { is_empty });

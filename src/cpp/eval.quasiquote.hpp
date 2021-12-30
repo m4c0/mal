@@ -1,5 +1,6 @@
 #pragma once
 
+#include "eval.common.hpp"
 #include "log.hpp"
 #include "printer.hpp"
 #include "types.hpp"
@@ -47,9 +48,21 @@ namespace mal::evals::impl {
   }
 }
 namespace mal::evals {
+  [[nodiscard]] static iteration quote(const types::list & in, senv /*e*/) noexcept {
+    const auto & list = *in;
+    if (list.size() != 2) return err_i("quote requires a parameter");
+    return { {}, list[1] };
+  }
+
   [[nodiscard]] static type quasiquote(const types::list & in) noexcept {
     std::span<const type> list = *in;
     if (list.size() != 2) return err("quasiquote requires a single argument");
     return impl::quasiquote(in.at(1));
+  }
+  [[nodiscard]] static iteration quasiquoteexpand_form(const types::list & in, senv /*e*/) noexcept {
+    return { {}, quasiquote(in) };
+  }
+  [[nodiscard]] static iteration quasiquote_form(const types::list & in, senv e) noexcept {
+    return { e, quasiquote(in) };
   }
 }

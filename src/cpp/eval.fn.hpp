@@ -33,9 +33,9 @@ namespace mal::evals::details {
   }
 }
 namespace mal::evals {
-  [[nodiscard]] static type fn(const std::shared_ptr<env> & oe, const types::list & in) noexcept {
+  [[nodiscard]] static iteration fn(const types::list & in, senv oe) noexcept {
     const auto & list = *in;
-    if (list.size() != 3) return err("fn* must have parameters and body");
+    if (list.size() != 3) return err_i("fn* must have parameters and body");
 
     auto p_span = list[1].to_iterable();
     std::vector<type> params;
@@ -43,6 +43,6 @@ namespace mal::evals {
     std::copy(p_span.begin(), p_span.end(), std::back_inserter(params));
 
     log::debug() << "fn* " << oe.get() << "\n";
-    return types::lambda { 0, details::fn_lambda(oe, params, list[2]) };
+    return { {}, types::lambda { 0, details::fn_lambda(oe, params, list[2]) } };
   }
 }

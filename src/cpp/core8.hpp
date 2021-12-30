@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core7.hpp"
+#include "eval.macro.hpp"
 
 namespace mal::core {
   static type nth(std::span<const type> args) noexcept {
@@ -25,6 +26,9 @@ namespace mal::core {
 
   static void setup_step8_funcs(auto rep, auto & e) noexcept {
     setup_step7_funcs(rep, e);
+
+    e->set("defmacro!", types::special { evals::macro::defmacro });
+    e->set("macroexpand", types::special { evals::macro::macroexpand_form });
 
     e->set("nth", types::lambda { nth });
     e->set("first", types::lambda { first });
