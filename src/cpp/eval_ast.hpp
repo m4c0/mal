@@ -12,6 +12,19 @@ namespace mal {
   class eval_ast {
     std::shared_ptr<env> m_e;
 
+    template<typename Res>
+    type apply_on_iterable(const Res & in) {
+      std::vector<type> out;
+      out.reserve(in.size());
+
+      for (const auto & v : *in) {
+        auto nv = EVAL(v, m_e);
+        if (nv.is_error()) return nv;
+        out.push_back(nv);
+      }
+      return Res { out };
+    }
+
   public:
     explicit eval_ast(std::shared_ptr<env> e) noexcept : m_e { std::move(e) } {
     }
@@ -27,23 +40,11 @@ namespace mal {
     }
 
     type operator()(const types::list & in) {
-      std::vector<type> out;
-      for (const auto & v : *in) {
-        auto nv = EVAL(v, m_e);
-        if (nv.is_error()) return nv;
-        out.push_back(nv);
-      }
-      return types::list { out };
+      return apply_on_iterable(in);
     }
 
     type operator()(const types::vector & in) {
-      std::vector<type> out;
-      for (const auto & v : *in) {
-        auto nv = EVAL(v, m_e);
-        if (nv.is_error()) return nv;
-        out.push_back(std::move(nv));
-      }
-      return types::vector { std::move(out) };
+      return apply_on_iterable(in);
     }
 
     type operator()(const types::symbol & in) {
