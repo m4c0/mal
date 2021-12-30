@@ -16,7 +16,7 @@ namespace mal {
 namespace mal::types::details {
   struct lambda_ret_t;
   using lambda_args_t = std::span<const type>;
-  using lambda_t = std::function<lambda_ret_t(lambda_args_t, std::shared_ptr<env>)>;
+  using lambda_t = std::function<lambda_ret_t(lambda_args_t, const std::shared_ptr<env> &)>;
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
@@ -47,7 +47,7 @@ namespace mal::types {
   using macro = details::holder<lambda>;
   using nil = nullptr_t;
   using number = details::holder<int>;
-  using special = details::heavy_holder<std::function<details::lambda_ret_t(list, std::shared_ptr<env>)>>;
+  using special = details::heavy_holder<std::function<details::lambda_ret_t(list, const std::shared_ptr<env> &)>>;
   using string = details::heavy_holder<std::string>;
   using symbol = details::token_holder<void>;
 

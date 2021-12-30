@@ -62,7 +62,10 @@ endfunction()
 function(mal_cpp_step NAME FILE)
   mal_step("cpp" ${NAME} ${FILE})
   target_link_libraries("cpp.${NAME}" PRIVATE mal_cpp)
-  mal_step_test("cpp.stepA.${NAME}" "${NAME}_${FILE}" $<TARGET_FILE:cpp.stepA> ../mal/${NAME}_${FILE}.mal)
+  if(NOT NAME STREQUAL "step5")
+    # There is not step5 in mal's own implementation
+    mal_step_test("cpp.stepA.${NAME}" "${NAME}_${FILE}" $<TARGET_FILE:cpp.stepA> ../mal/${NAME}_${FILE}.mal)
+  endif()
 endfunction()
 
 function(mal_llvm_step NAME FILE)
