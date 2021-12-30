@@ -11,7 +11,7 @@
 namespace mal::impl {
   class eval {
     static std::shared_ptr<env> eval_list(type * v, evals::senv e) noexcept {
-      *v = v->visit(eval_ast { e });
+      eval_ast::visit(v, e);
       if (v->is_error()) return {};
 
       const auto & list = *v->as<types::list>();
@@ -30,7 +30,7 @@ namespace mal::impl {
   public:
     [[nodiscard]] static std::shared_ptr<env> visit(type * v, const std::shared_ptr<env> & e) noexcept {
       if (!v->is<types::list>()) {
-        *v = v->visit(eval_ast { e });
+        eval_ast::visit(v, e);
         return {};
       }
       auto args = v->to_iterable();
