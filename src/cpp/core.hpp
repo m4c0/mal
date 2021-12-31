@@ -9,11 +9,7 @@
 #include "rep.hpp"
 #include "types.hpp"
 
-#include <fstream>
-#include <functional>
-#include <iostream>
 #include <numeric>
-#include <sstream>
 
 namespace mal::core::details {
   template<typename Op>
@@ -39,35 +35,13 @@ namespace mal::core::details {
     };
   }
 
-  static void pr_str(std::ostream & os, std::span<const type> args, const std::string & sep, bool readably) noexcept {
-    bool first = true;
-    for (const auto & a : args) {
-      if (!first) os << sep;
-      os << mal::pr_str(a, readably);
-      first = false;
-    }
-  }
-
-  static auto cout_pr_str(bool readably) noexcept {
-    return [readably](std::span<const type> args) noexcept -> type {
-      details::pr_str(std::cout, args, " ", readably);
-      std::cout << "\n";
-      return types::nil {};
-    };
-  }
+  type prn(std::span<const type> args) noexcept;
+  type println(std::span<const type> args) noexcept;
+  type pr_str(std::span<const type> args) noexcept;
+  type slurp(std::span<const type> args) noexcept;
+  type str(std::span<const type> args) noexcept;
 }
 namespace mal::core {
-  static type pr_str(std::span<const type> args) noexcept {
-    std::ostringstream os;
-    details::pr_str(os, args, " ", true);
-    return types::string { os.str() };
-  }
-  static type str(std::span<const type> args) noexcept {
-    std::ostringstream os;
-    details::pr_str(os, args, "", false);
-    return types::string { os.str() };
-  }
-
   static type is_empty(std::span<const type> args) noexcept {
     if (args.empty()) return types::boolean { false };
     return types::boolean { args[0].to_iterable().empty() };
@@ -100,16 +74,6 @@ namespace mal::core {
   static type read_string(std::span<const type> args) noexcept {
     if (args.size() != 1) return err("Can only read a single string");
     return read_str({ args[0].to_string() });
-  }
-  static type slurp(std::span<const type> args) noexcept {
-    if (args.size() != 1) return err("Can only slurp a single file");
-
-    std::ifstream in { args[0].to_string() };
-    if (!in) return err("Failure to slurp file");
-
-    std::ostringstream os {};
-    os << in.rdbuf();
-    return types::string { os.str() };
   }
 
   static type atom(std::span<const type> args) noexcept {
@@ -175,10 +139,10 @@ namespace mal::core {
     e->set(">", types::lambda { details::bool_bifunc(std::greater<>()) });
     e->set(">=", types::lambda { details::bool_bifunc(std::greater_equal<>()) });
 
-    e->set("pr-str", types::lambda { pr_str });
-    e->set("str", types::lambda { str });
-    e->set("prn", types::lambda { details::cout_pr_str(true) });
-    e->set("println", types::lambda { details::cout_pr_str(false) });
+    e->set("pr-str", types::lambda { details::pr_str });
+    e->set("str", types::lambda { details::str });
+    e->set("prn", types::lambda { details::prn });
+    e->set("println", types::lambda { details::println });
 
     rep("(def! not (fn* (a) (if a false true)))", e);
   }
@@ -188,7 +152,7 @@ namespace mal::core {
 
     e->set("read-string", types::lambda { read_string });
     e->set("eval", types::lambda { 0, eval(e) });
-    e->set("slurp", types::lambda { slurp });
+    e->set("slurp", types::lambda { details::slurp });
 
     e->set("atom", types::lambda { atom });
     e->set("atom?", types::lambda { is_atom });

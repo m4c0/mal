@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef NDEBUG
 #include <iostream>
+#endif
 
 namespace mal::log {
 #ifdef NDEBUG

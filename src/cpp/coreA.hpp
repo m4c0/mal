@@ -4,6 +4,7 @@
 #include "printer.hpp"
 
 #include <chrono>
+#include <iostream>
 #include <string>
 
 namespace mal::core {

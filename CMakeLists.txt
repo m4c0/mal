@@ -20,9 +20,13 @@ target_include_directories(mal_defs INTERFACE
   inc)
 
 add_library(mal_cpp STATIC 
+  src/cpp/core.cpp
+  src/cpp/eval.fn.cpp
   src/cpp/eval.impl.cpp
   src/cpp/eval.macro.cpp
   src/cpp/eval.trycatch.cpp
+  src/cpp/reader.cpp
+  src/cpp/rep.cpp
   src/cpp/printer.cpp
   src/cpp/types.holders.cpp)
 target_link_libraries(mal_cpp PUBLIC mal_defs)
