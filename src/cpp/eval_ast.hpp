@@ -11,7 +11,7 @@
 namespace mal {
   class eval_ast {
     template<typename Tp>
-    static void apply_on_iterable(type * v, const std::shared_ptr<env> & e) {
+    static void apply_on_iterable(type * v, senv e) {
       std::vector<type> items { *v->as<Tp>() };
       for (auto & item : items) {
         item = EVAL(item, e);
@@ -23,7 +23,7 @@ namespace mal {
       *v = Tp { items };
     }
 
-    static void apply_on_hashmap(type * v, const std::shared_ptr<env> & e) {
+    static void apply_on_hashmap(type * v, senv e) {
       auto map = *v->as<types::hashmap>();
       for (auto & [key, val] : map) {
         val = EVAL(val, e);
@@ -36,7 +36,7 @@ namespace mal {
     }
 
   public:
-    static void visit(type * v, const std::shared_ptr<env> & e) noexcept {
+    static void visit(type * v, senv e) noexcept {
       if (v->is<types::symbol>()) {
         *v = e->lookup(v->to_symbol());
         return;

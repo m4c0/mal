@@ -9,7 +9,7 @@
 #include <iterator>
 
 namespace mal::evals::details {
-  static auto fn_lambda(const std::shared_ptr<env> & oe, const std::vector<type> & params, const type & body) {
+  static auto fn_lambda(senv oe, const std::vector<type> & params, const type & body) {
     return [oe, params, body](std::span<const type> args, auto /**/) -> types::details::lambda_ret_t {
       auto e = std::make_shared<env>(oe);
 

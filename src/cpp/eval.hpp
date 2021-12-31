@@ -6,5 +6,5 @@
 #include <memory>
 
 namespace mal {
-  [[nodiscard]] type EVAL(const type & in, std::shared_ptr<mal::env> e);
+  [[nodiscard]] type EVAL(const type & in, senv e);
 }

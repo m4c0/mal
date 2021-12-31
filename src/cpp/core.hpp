@@ -89,7 +89,7 @@ namespace mal::core {
     return types::boolean { args[0] == args[1] };
   }
 
-  static auto eval(const std::shared_ptr<env> & e) noexcept {
+  static auto eval(senv e) noexcept {
     return [e](std::span<const type> args, auto /*call_env*/) noexcept -> types::details::lambda_ret_t {
       if (args.size() != 1) return { {}, err("Can only eval a single value") };
       log::debug() << "eval " << e.get() << "\n";
@@ -129,7 +129,7 @@ namespace mal::core {
     if (!args[0].is<types::atom>()) return err("reset! requires an atom");
     return args[0].as<types::atom>().reset(args[1]);
   }
-  static types::details::lambda_ret_t swap(std::span<const type> args, const std::shared_ptr<env> & env) noexcept {
+  static types::details::lambda_ret_t swap(std::span<const type> args, senv env) noexcept {
     if (args.size() < 2) return { {}, err("swap! needs at least a atom and a function") };
     if (!args[0].is<types::atom>()) return { {}, err("swap! requires an atom") };
     if (!args[1].is<types::lambda>()) return { {}, err("swap! requires a function") };

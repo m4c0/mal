@@ -28,7 +28,7 @@ namespace mal::impl {
     }
 
   public:
-    [[nodiscard]] static std::shared_ptr<env> visit(type * v, const std::shared_ptr<env> & e) noexcept {
+    [[nodiscard]] static std::shared_ptr<env> visit(type * v, senv e) noexcept {
       if (!v->is<types::list>()) {
         eval_ast::visit(v, e);
         return {};

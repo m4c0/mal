@@ -4,7 +4,8 @@
 
 using namespace mal;
 
-type mal::EVAL(const type & in, std::shared_ptr<env> e) {
+type mal::EVAL(const type & in, senv oe) {
+  auto e = oe;
   type var = in;
   while (e) {
     evals::macro::macroexpand(&var, e);

@@ -12,11 +12,12 @@
 
 namespace mal {
   class env;
+  using senv = const std::shared_ptr<env> &;
 }
 namespace mal::types::details {
   struct lambda_ret_t;
   using lambda_args_t = std::span<const type>;
-  using lambda_t = std::function<lambda_ret_t(lambda_args_t, const std::shared_ptr<env> &)>;
+  using lambda_t = std::function<lambda_ret_t(lambda_args_t, senv)>;
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept;
 }
 namespace mal::types {
@@ -47,7 +48,7 @@ namespace mal::types {
   using macro = details::holder<lambda>;
   using nil = nullptr_t;
   using number = details::holder<int>;
-  using special = details::heavy_holder<std::function<details::lambda_ret_t(list, const std::shared_ptr<env> &)>>;
+  using special = details::heavy_holder<std::function<details::lambda_ret_t(list, senv)>>;
   using string = details::heavy_holder<std::string>;
   using symbol = details::token_holder<void>;
 
@@ -188,7 +189,7 @@ namespace mal::types::details {
   };
 
   [[nodiscard]] static lambda_t convert(std::function<type(lambda_args_t)> fn) noexcept {
-    return [fn = std::move(fn)](lambda_args_t args, const std::shared_ptr<env> & /**/) noexcept {
+    return [fn = std::move(fn)](lambda_args_t args, senv /**/) noexcept {
       return lambda_ret_t { {}, fn(args) };
     };
   }

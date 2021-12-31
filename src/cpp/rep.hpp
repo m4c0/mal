@@ -14,7 +14,7 @@ namespace mal {
     return pr_str(in);
   }
 
-  static auto rep(const std::string & in, const std::shared_ptr<env> & e) {
+  static auto rep(const std::string & in, senv e) {
     return PRINT(EVAL(READ(in), e));
   }
 
@@ -23,19 +23,19 @@ namespace mal {
     return static_cast<bool>(std::getline(std::cin, line));
   }
 
-  static void run(const std::shared_ptr<env> & e) {
+  static void run(senv e) {
     std::string line;
     while (readline(line)) {
       std::cout << rep(line, e) << "\n";
     }
   }
-  static void run(int argc, char ** argv, const std::shared_ptr<env> & e) {
+  static void run(int argc, char ** argv, senv e) {
     if (core::setup_argv(argc, argv, rep, e)) {
       return;
     }
     run(e);
   }
-  static void run_with_banner(int argc, char ** argv, const std::shared_ptr<env> & e) {
+  static void run_with_banner(int argc, char ** argv, senv e) {
     if (core::setup_argv(argc, argv, rep, e)) {
       return;
     }

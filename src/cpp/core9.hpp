@@ -13,7 +13,7 @@ namespace mal::core {
   static type throw_(std::span<const type> args) noexcept {
     return types::error { args[0] };
   }
-  static types::details::lambda_ret_t apply(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
+  static types::details::lambda_ret_t apply(std::span<const type> args, senv e) noexcept {
     if (args.size() < 2) return { {}, err("apply requires at least two arguments") };
     if (!args[0].is<types::lambda>()) return { {}, err("apply require a function as first argument") };
     if (!args.back().is_iterable()) return { {}, err("apply require a list/vector as last argument") };
@@ -22,7 +22,7 @@ namespace mal::core {
     const auto fn_args = types::list { args.subspan(1, args.size() - 2), args.back().to_iterable() };
     return fn(*fn_args, e);
   }
-  static types::details::lambda_ret_t map(std::span<const type> args, const std::shared_ptr<env> & e) noexcept {
+  static types::details::lambda_ret_t map(std::span<const type> args, senv e) noexcept {
     if (args.size() != 2) return { {}, err("map requires at two arguments") };
     if (!args[0].is<types::lambda>()) return { {}, err("map require a function as first argument") };
     if (!args[1].is_iterable()) return { {}, err("map require a list/vector as last argument") };
