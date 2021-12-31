@@ -162,8 +162,8 @@ namespace mal::core {
     return types::list { std::move(res) };
   }
 
-  static void setup_step9_funcs(auto rep, auto & e) noexcept {
-    setup_step8_funcs(rep, e);
+  static void setup_step9_funcs(auto & e) noexcept {
+    setup_step8_funcs(e);
 
     e->set("try*", types::special { evals::trycatch::try_ });
     e->set("catch*", types::special { evals::trycatch::catch_ });

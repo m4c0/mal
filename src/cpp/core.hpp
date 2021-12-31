@@ -6,6 +6,7 @@
 #include "log.hpp"
 #include "printer.hpp"
 #include "reader.hpp"
+#include "rep.hpp"
 #include "types.hpp"
 
 #include <fstream>
@@ -155,7 +156,7 @@ namespace mal::core {
     e->set("let*", types::special { evals::let });
   }
 
-  static void setup_step4_funcs(auto rep, auto & e) {
+  static void setup_step4_funcs(auto & e) {
     setup_step3_funcs(e);
 
     e->set("do", types::special { evals::do_ });
@@ -182,8 +183,8 @@ namespace mal::core {
     rep("(def! not (fn* (a) (if a false true)))", e);
   }
 
-  static void setup_step6_funcs(auto rep, auto & e) {
-    setup_step4_funcs(rep, e);
+  static void setup_step6_funcs(auto & e) {
+    setup_step4_funcs(e);
 
     e->set("read-string", types::lambda { read_string });
     e->set("eval", types::lambda { 0, eval(e) });
@@ -196,23 +197,5 @@ namespace mal::core {
     e->set("swap!", types::lambda { 0, swap });
 
     rep(R"--((def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)"))))))--", e);
-  }
-
-  [[nodiscard]] static bool setup_argv(int argc, char ** argv, auto rep, auto & e) noexcept {
-    std::span<char *> argn { argv, static_cast<size_t>(argc) };
-
-    std::vector<mal::type> arg_list;
-    for (int i = 2; i < argn.size(); i++) {
-      arg_list.push_back(mal::types::string { argn[i] });
-    }
-    e->set("*ARGV*", mal::types::list { arg_list });
-
-    if (argn.size() > 1) {
-      std::ostringstream os;
-      os << "(load-file \"" << argn[1] << "\")";
-      std::cout << rep(os.str(), e) << "\n";
-      return true;
-    }
-    return false;
   }
 }

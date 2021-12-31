@@ -27,8 +27,8 @@ namespace mal::core {
     return types::vector { args[0].to_iterable() };
   }
 
-  static void setup_step7_funcs(auto rep, auto & e) {
-    setup_step6_funcs(rep, e);
+  static void setup_step7_funcs(auto & e) {
+    setup_step6_funcs(e);
 
     e->set("quote", types::special { evals::quote });
     e->set("quasiquoteexpand", types::special { evals::quasiquoteexpand_form });

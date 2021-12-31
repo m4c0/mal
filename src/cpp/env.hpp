@@ -33,6 +33,10 @@ namespace mal {
     [[nodiscard]] type lookup(const std::string & key) const noexcept {
       return get(key);
     }
+
+    [[nodiscard]] static std::shared_ptr<env> make() noexcept {
+      return std::make_shared<env>();
+    }
   };
   using senv = const std::shared_ptr<env> &;
 }

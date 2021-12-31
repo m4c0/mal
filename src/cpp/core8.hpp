@@ -24,8 +24,8 @@ namespace mal::core {
     return types::list { list.subspan(1) };
   }
 
-  static void setup_step8_funcs(auto rep, auto & e) noexcept {
-    setup_step7_funcs(rep, e);
+  static void setup_step8_funcs(auto & e) noexcept {
+    setup_step7_funcs(e);
 
     e->set("defmacro!", types::special { evals::macro::defmacro });
     e->set("macroexpand", types::special { evals::macro::macroexpand_form });
