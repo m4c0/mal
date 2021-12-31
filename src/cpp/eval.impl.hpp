@@ -10,7 +10,7 @@
 
 namespace mal::impl {
   class eval {
-    static std::shared_ptr<env> eval_list(type * v, evals::senv e) noexcept {
+    static std::shared_ptr<env> eval_list(type * v, senv e) noexcept {
       eval_ast::visit(v, e);
       if (v->is_error()) return {};
 

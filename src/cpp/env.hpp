@@ -34,4 +34,5 @@ namespace mal {
       return get(key);
     }
   };
+  using senv = const std::shared_ptr<env> &;
 }

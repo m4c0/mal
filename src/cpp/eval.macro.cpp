@@ -22,7 +22,7 @@ using namespace mal::evals;
   return { {}, value };
 }
 
-[[nodiscard]] static std::optional<mal::type> is_macro_call(const mal::type & ast, senv e) noexcept {
+[[nodiscard]] static std::optional<mal::type> is_macro_call(const mal::type & ast, mal::senv e) noexcept {
   if (!ast.is<mal::types::list>()) return {};
 
   const auto & list = ast.as<mal::types::list>();
