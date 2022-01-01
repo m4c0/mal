@@ -1,4 +1,5 @@
 #include "eval.hpp"
+#include "eval.impl.hpp"
 #include "eval.macro.hpp"
 #include "log.hpp"
 
@@ -33,10 +34,15 @@ using namespace mal::evals;
   if (res.is<mal::types::macro>()) return res;
   return {};
 }
-void macro::macroexpand(type * ast, senv e) noexcept {
-  while (auto macro = is_macro_call(*ast, e)) {
+void macro::macroexpand(type * ast, senv oe) noexcept {
+  while (auto macro = is_macro_call(*ast, oe)) {
     auto args = ast->to_iterable().subspan(1);
-    auto res = (**macro->as<types::macro>())(args, e);
-    *ast = EVAL(res.t, res.e);
+    auto res = (**macro->as<types::macro>())(args, oe);
+
+    auto e = res.e;
+    *ast = res.t;
+    while (e) {
+      e = impl::eval::visit(ast, e);
+    }
   }
 }
