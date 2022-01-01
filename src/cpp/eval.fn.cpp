@@ -10,7 +10,7 @@
 namespace mal::evals::details {
   static auto fn_lambda(senv oe, const std::vector<type> & params, const type & body) {
     return [oe, params, body](std::span<const type> args, auto /**/) -> types::details::lambda_ret_t {
-      auto e = std::make_shared<env>(oe);
+      auto e = oe->extend();
 
       for (int i = 0; i < params.size(); i++) {
         auto p = params[i].to_symbol();

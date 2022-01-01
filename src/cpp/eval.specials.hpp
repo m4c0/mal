@@ -20,7 +20,7 @@ namespace mal::evals {
   }
 
   [[nodiscard]] static iteration let(const types::list & in, senv m_e) noexcept {
-    auto inner = std::make_shared<env>(m_e);
+    auto inner = m_e->extend();
 
     const auto & list = *in;
     if (list.size() != 3) return err_i("let* must have an env and an expression");

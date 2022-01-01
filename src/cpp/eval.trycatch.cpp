@@ -10,7 +10,7 @@ using namespace mal::evals;
   if (!res.is_error()) return { {}, res };
   if (list.size() == 2) return { {}, res }; // try* without catch*
 
-  auto ne = std::make_shared<env>(e);
+  auto ne = e->extend();
   ne->set("*EXCEPTION*", *res.as<types::error>());
   return { ne, list.at(2) };
 }
@@ -19,7 +19,7 @@ using namespace mal::evals;
 
   if (!list.at(1).is<types::symbol>()) return err_i("catch* requires a symbol");
 
-  auto ne = std::make_shared<env>(e);
+  auto ne = e->extend();
   ne->set(list.at(1).to_symbol(), e->get("*EXCEPTION*"));
   return { ne, list.at(2) };
 }
