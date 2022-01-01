@@ -12,15 +12,19 @@ namespace mal {
   class eval_ast {
     template<typename Tp>
     static void apply_on_iterable(type * v, senv e) {
-      std::vector<type> items { *v->as<Tp>() };
-      for (auto & item : items) {
-        item = EVAL(item, e);
+      const auto & orig = *v->as<Tp>();
+
+      std::vector<type> items;
+      items.reserve(orig.size());
+      for (int i = 0; i < orig.size(); i++) {
+        items.emplace_back(EVAL(orig[i], e));
+        const auto & item = items.back();
         if (item.is_error()) {
           *v = item;
           [[unlikely]] return;
         }
       }
-      *v = Tp { items };
+      *v = Tp { std::move(items) };
     }
 
     static void apply_on_hashmap(type * v, senv e) {
@@ -32,7 +36,7 @@ namespace mal {
           [[unlikely]] return;
         }
       }
-      *v = types::hashmap { map };
+      *v = types::hashmap { std::move(map) };
     }
 
   public:
