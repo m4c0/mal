@@ -2,7 +2,6 @@
 
 #include "types.hpp"
 
-#include <sstream>
 #include <unordered_map>
 #include <utility>
 
@@ -10,6 +9,8 @@ namespace mal {
   class env {
     std::unordered_map<std::string, type> m_data {};
     std::shared_ptr<const env> m_outer {};
+
+    static type err_not_found(const std::string & key) noexcept;
 
   public:
     env() = default;
@@ -20,10 +21,7 @@ namespace mal {
       auto it = m_data.find(key);
       if (it != m_data.end()) return it->second;
       if (m_outer != nullptr) return m_outer->get(key);
-
-      std::ostringstream os;
-      os << "'" << key << "' not found";
-      return err(os.str());
+      return err_not_found(key);
     }
 
     void set(const std::string & key, type val) noexcept {

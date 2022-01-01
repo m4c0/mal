@@ -21,6 +21,7 @@ target_include_directories(mal_defs INTERFACE
 
 add_library(mal_cpp STATIC 
   src/cpp/core.cpp
+  src/cpp/env.cpp
   src/cpp/eval.fn.cpp
   src/cpp/eval.impl.cpp
   src/cpp/eval.macro.cpp

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 namespace mal::core::details {
   void pr_str(std::ostream & os, std::span<const type> args, const std::string & sep, bool readably) noexcept {

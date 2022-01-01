@@ -6,6 +6,7 @@
 #include "types.hpp"
 
 #include <iostream>
+#include <sstream>
 
 namespace mal {
   static auto READ(auto in) {
