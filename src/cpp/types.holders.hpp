@@ -1,7 +1,7 @@
 #pragma once
 
 #include "log.hpp"
-#include "mal/parser.hpp"
+#include "parser.hpp"
 
 #include <iterator>
 #include <memory>

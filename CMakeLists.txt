@@ -15,9 +15,7 @@ find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 
 add_library(mal_defs INTERFACE)
 target_compile_features(mal_defs INTERFACE cxx_std_20)
-target_include_directories(mal_defs INTERFACE
-  ext/m4c0-stl/parser/inc
-  inc)
+target_include_directories(mal_defs INTERFACE ext/m4c0-stl/parser/inc)
 
 add_library(mal_cpp STATIC 
   src/cpp/core.cpp
@@ -93,7 +91,7 @@ mal_cpp_step(step9 try)
 mal_cpp_step(stepA mal)
 mal_perf(cpp)
 
-mal_llvm_step(step0 repl)
-mal_llvm_step(step1 read_print)
+#mal_llvm_step(step0 repl)
+#mal_llvm_step(step1 read_print)
 #mal_llvm_step(step2 eval)
 
