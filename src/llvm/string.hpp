@@ -19,6 +19,10 @@ namespace mal {
       *m_mark = gen;
     }
 
+    [[nodiscard]] constexpr auto operator*() const noexcept {
+      return std::string_view { m_data, m_len };
+    }
+
     static void sweep(size_t cur_gen) noexcept;
   };
 }

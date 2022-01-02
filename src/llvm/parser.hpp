@@ -1,3 +1,5 @@
+#pragma once
+
 #include "m4c0/parser/numeric.hpp"
 #include "m4c0/parser/str.hpp"
 
