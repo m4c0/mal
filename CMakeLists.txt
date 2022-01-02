@@ -17,58 +17,31 @@ add_library(mal_defs INTERFACE)
 target_compile_features(mal_defs INTERFACE cxx_std_20)
 target_include_directories(mal_defs INTERFACE ext/m4c0-stl/parser/inc)
 
-add_library(mal_cpp STATIC 
-  src/cpp/core.cpp
-  src/cpp/env.cpp
-  src/cpp/eval.fn.cpp
-  src/cpp/eval.impl.cpp
-  src/cpp/eval.macro.cpp
-  src/cpp/eval.trycatch.cpp
-  src/cpp/reader.cpp
-  src/cpp/rep.cpp
-  src/cpp/printer.cpp
-  src/cpp/types.holders.cpp)
-target_link_libraries(mal_cpp PUBLIC mal_defs)
+function(mal_step_test TEST_NAME MAL_FILE TARGET)
+  set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- $<TARGET_FILE:${TARGET}>)
+  set(DIR ${CMAKE_SOURCE_DIR}/impls/tests)
 
-function(mal_step_test TEST_NAME MAL_FILE)
-  add_test(
-    NAME ${TEST_NAME}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests
-    COMMAND ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${ARGN}
-    )
+  add_test(NAME ${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD})
+
+  if(NOT MAL_FILE STREQUAL "step5_tco")
+    # There is not step5 in mal's own implementation
+    add_test(NAME mal.${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD} ../mal/${MAL_FILE}.mal)
+  endif()
 endfunction()
 
-function(mal_step LANG NAME FILE)
-  set(TARGET "${LANG}.${NAME}")
-
-  add_executable(${TARGET} src/${LANG}/${NAME}.cpp)
-  target_link_libraries(${TARGET} PUBLIC mal_defs)
-
-  mal_step_test(${TARGET} "${NAME}_${FILE}" $<TARGET_FILE:${TARGET}>)
-endfunction()
-
-function(mal_perf_step LANG NAME)
-  add_custom_target(${LANG}.${NAME}
-    COMMAND ${LANG}.stepA ${NAME}.mal
+function(mal_perf_step LANG TARGET NAME)
+  add_custom_target("${LANG}-${NAME}"
+    COMMAND ${TARGET} ${NAME}.mal
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests)
 endfunction()
-function(mal_perf LANG)
-  mal_perf_step(${LANG} perf1)
-  mal_perf_step(${LANG} perf2)
-  mal_perf_step(${LANG} perf3)
-  add_custom_target(${LANG}.perf
-    DEPENDS ${LANG}.perf1
-    DEPENDS ${LANG}.perf2
-    DEPENDS ${LANG}.perf3)
-endfunction()
-
-function(mal_cpp_step NAME FILE)
-  mal_step("cpp" ${NAME} ${FILE})
-  target_link_libraries("cpp.${NAME}" PRIVATE mal_cpp)
-  if(NOT NAME STREQUAL "step5")
-    # There is not step5 in mal's own implementation
-    mal_step_test("cpp.stepA.${NAME}" "${NAME}_${FILE}" $<TARGET_FILE:cpp.stepA> ../mal/${NAME}_${FILE}.mal)
-  endif()
+function(mal_perf LANG TARGET)
+  mal_perf_step(${LANG} ${TARGET} perf1)
+  mal_perf_step(${LANG} ${TARGET} perf2)
+  mal_perf_step(${LANG} ${TARGET} perf3)
+  add_custom_target(${LANG}-perf
+    DEPENDS ${LANG}-perf1
+    DEPENDS ${LANG}-perf2
+    DEPENDS ${LANG}-perf3)
 endfunction()
 
 function(mal_llvm_step NAME FILE)
@@ -78,20 +51,8 @@ function(mal_llvm_step NAME FILE)
   target_link_libraries(${TARGET} PRIVATE ${CLANG} ${CLANGPP} ${LLVM})
 endfunction()
 
-mal_cpp_step(step0 repl)
-mal_cpp_step(step1 read_print)
-mal_cpp_step(step2 eval)
-mal_cpp_step(step3 env)
-mal_cpp_step(step4 if_fn_do)
-mal_cpp_step(step5 tco)
-mal_cpp_step(step6 file)
-mal_cpp_step(step7 quote)
-mal_cpp_step(step8 macros)
-mal_cpp_step(step9 try)
-mal_cpp_step(stepA mal)
-mal_perf(cpp)
-
 #mal_llvm_step(step0 repl)
 #mal_llvm_step(step1 read_print)
 #mal_llvm_step(step2 eval)
 
+add_subdirectory(src/cpp)
