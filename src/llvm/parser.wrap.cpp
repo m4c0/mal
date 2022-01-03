@@ -11,18 +11,18 @@ namespace mal::parser::wrap {
 
   template<>
   sum int_op_wrap<sum>::operator+(type v) const noexcept {
-    return sum { v };
+    return sum { m_value != nullptr ? builder().CreateAdd(m_value, v) : v };
   }
   template<>
   sub int_op_wrap<sub>::operator+(type v) const noexcept {
-    return sub { v };
+    return sub { m_value != nullptr ? builder().CreateSub(m_value, v) : v };
   }
   template<>
   mult int_op_wrap<mult>::operator+(type v) const noexcept {
-    return mult { v };
+    return mult { m_value != nullptr ? builder().CreateMul(m_value, v) : v };
   }
   template<>
   div int_op_wrap<div>::operator+(type v) const noexcept {
-    return div { v };
+    return div { m_value != nullptr ? builder().CreateSDiv(m_value, v) : v };
   }
 }
