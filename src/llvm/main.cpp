@@ -18,18 +18,15 @@ static bool readline(std::string & line) noexcept {
 }
 
 int main() {
+  constexpr const mal::parser::form parser {};
   std::string line;
   while (readline(line)) {
     using namespace mal::parser;
 
     try {
-      form(input_t { line.data(), line.size() }) % finish {};
+      parser(input_t { line.data(), line.size() }) % finish {};
     } catch (const std::exception & e) {
       std::cerr << "error: " << e.what() << "\n";
     }
   }
-}
-
-mal::parser::type mal::parser::core::to_int(type /*value*/) {
-  throw std::runtime_error("mistyped type when typing");
 }

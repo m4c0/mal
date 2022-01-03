@@ -9,6 +9,7 @@ find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 add_executable(llvm-stepX
   core.cpp
   main.cpp
+  parser.wrap.cpp
   string.cpp
   )
 target_include_directories(llvm-stepX PRIVATE ${LLVM_INCLUDE_DIR})
