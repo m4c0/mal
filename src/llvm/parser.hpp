@@ -17,7 +17,7 @@ namespace mal::parser {
 
   static constexpr const auto number = match_s32() & wrap::constant;
 
-  static constexpr const auto non_form = list | number;
+  static constexpr const auto non_form = list | number | "Invalid form";
 
   constexpr result<type> form::operator()(input_t in) const {
     return non_form(in);

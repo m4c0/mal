@@ -7,22 +7,24 @@
 namespace mal {
   class context {
     llvm::LLVMContext m_ctx {};
-    llvm::Module m_module { "mal", m_ctx };
+    std::unique_ptr<llvm::Module> m_module {};
     llvm::IRBuilder<> m_builder { m_ctx };
+    llvm::Function * m_fn {};
 
-    context() {
-      auto * fn_tp = llvm::FunctionType::get(llvm::Type::getVoidTy(m_ctx), false);
-      auto * fn = llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "", m_module);
-
-      m_builder.SetInsertPoint(llvm::BasicBlock::Create(m_ctx, "entry", fn));
-    }
+    context() = default;
 
   public:
+    void begin() noexcept;
+    void end();
+
     [[nodiscard]] auto & builder() noexcept {
       return m_builder;
     }
     [[nodiscard]] auto & ctx() noexcept {
       return m_ctx;
+    }
+    [[nodiscard]] auto * mod() noexcept {
+      return m_module.get();
     }
 
     [[nodiscard]] static context * instance() noexcept {
@@ -31,6 +33,29 @@ namespace mal {
     }
   };
 
+  namespace llvm_helper {
+    template<typename Ret>
+    struct type_fns;
+    template<>
+    struct type_fns<void> {
+      static constexpr const auto getter = llvm::Type::getVoidTy;
+    };
+    template<>
+    struct type_fns<int> {
+      static constexpr const auto getter = llvm::Type::getInt32Ty;
+    };
+
+    template<typename Ret, typename... Args>
+    [[nodiscard]] static auto * function_type(Ret (*)(Args...), bool vararg = false) noexcept { // NOLINT
+      auto & ctx = context::instance()->ctx();
+      auto * ret = type_fns<Ret>::getter(ctx);
+      return llvm::FunctionType::get(ret, { (type_fns<Args>::getter(ctx), ...) }, vararg);
+    }
+  }
+
+  static auto * mod() noexcept {
+    return context::instance()->mod();
+  }
   static auto & builder() noexcept {
     return context::instance()->builder();
   }

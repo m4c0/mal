@@ -7,6 +7,7 @@ find_library(CLANGPP clang-cpp HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 
 add_executable(llvm-stepX
+  context.cpp
   core.cpp
   main.cpp
   parser.wrap.cpp

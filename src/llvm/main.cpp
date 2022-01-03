@@ -1,11 +1,18 @@
+#include "context.hpp"
 #include "parser.hpp"
 
 #include <iostream>
 #include <stdexcept>
 
+using namespace mal;
+
 struct finish {
-  void operator()(mal::parser::type v) noexcept {
-    std::cerr << v << "\n";
+  void operator()(parser::type v) {
+    auto * prstr = mod()->getFunction("mal_intr_prstr_int");
+    builder().CreateCall(prstr, { v });
+    builder().CreateRetVoid();
+
+    context::instance()->end();
   }
   void operator()(mal::parser::input_t err) noexcept {
     std::cerr << "error: " << std::string_view { err.begin(), err.length() } << "\n";
@@ -18,10 +25,12 @@ static bool readline(std::string & line) noexcept {
 }
 
 int main() {
-  constexpr const mal::parser::form parser {};
+  using namespace mal::parser;
+  constexpr const form parser {};
+
   std::string line;
   while (readline(line)) {
-    using namespace mal::parser;
+    context::instance()->begin();
 
     try {
       parser(input_t { line.data(), line.size() }) % finish {};
