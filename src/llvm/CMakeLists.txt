@@ -9,9 +9,9 @@ find_library(LLVM LLVM HINTS ${LLVM_LIBRARY_DIR} REQUIRED)
 add_executable(llvm-stepX
   context.cpp
   core.cpp
+  gc_object.cpp
   main.cpp
   parser.wrap.cpp
-  string.cpp
   )
 target_include_directories(llvm-stepX PRIVATE ${LLVM_INCLUDE_DIR})
 target_link_libraries(llvm-stepX PRIVATE mal_defs ${CLANG} ${CLANGPP} ${LLVM})

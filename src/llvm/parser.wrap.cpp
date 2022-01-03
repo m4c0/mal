@@ -8,6 +8,10 @@ namespace mal::parser::wrap {
     auto & ctx = context::instance()->ctx();
     return llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(ctx), v);
   }
+  type empty_list(nil /**/) noexcept {
+    auto & ctx = context::instance()->ctx();
+    return llvm::Constant::getNullValue(llvm::Type::getInt32PtrTy(ctx));
+  }
 
   template<>
   sum int_op_wrap<sum>::operator+(type v) const noexcept {

@@ -34,4 +34,5 @@ namespace mal::parser::wrap {
   };
 
   type constant(int v) noexcept;
+  type empty_list(nil /**/) noexcept;
 }

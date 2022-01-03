@@ -6,10 +6,16 @@
 
 using namespace mal;
 
+static const char * pr_str_for_type(parser::type v) {
+  if (v->getType()->isIntegerTy()) return "mal_intr_prstr_int";
+  if (v->getType() == llvm::IntegerType::getInt32PtrTy(context::instance()->ctx())) return "mal_intr_prstr_list";
+  throw std::runtime_error("unknown type");
+}
+
 struct finish {
   void operator()(parser::type v) {
-    auto * prstr = mod()->getFunction("mal_intr_prstr_int");
-    builder().CreateCall(prstr, { v });
+    const char * pr_str = pr_str_for_type(v);
+    builder().CreateCall(mod()->getFunction(pr_str), { v });
     builder().CreateRetVoid();
 
     context::instance()->end();

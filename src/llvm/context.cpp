@@ -29,8 +29,8 @@ void context::begin() noexcept {
 
   m_builder.SetInsertPoint(llvm::BasicBlock::Create(m_ctx, "entry", m_fn));
 
-  fn_tp = llvm_helper::function_type(mal_intr_prstr_int);
   m_module->getOrInsertFunction("mal_intr_prstr_int", llvm_helper::function_type(mal_intr_prstr_int));
+  m_module->getOrInsertFunction("mal_intr_prstr_list", llvm_helper::function_type(mal_intr_prstr_list));
 }
 void context::end() {
   if (llvm::verifyModule(*m_module, &llvm::errs(), nullptr)) {

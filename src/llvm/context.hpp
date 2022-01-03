@@ -44,6 +44,12 @@ namespace mal {
     struct type_fns<int> {
       static constexpr const auto getter = llvm::Type::getInt32Ty;
     };
+    template<>
+    struct type_fns<llvm::Value **> {
+      static constexpr const auto getter = [](auto & ctx) {
+        return llvm::Type::getInt32PtrTy(ctx);
+      };
+    };
 
     template<typename Ret, typename... Args>
     [[nodiscard]] static auto * function_type(Ret (*)(Args...), bool vararg = false) noexcept { // NOLINT
