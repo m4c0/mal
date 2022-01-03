@@ -5,50 +5,47 @@
 
 namespace mal::parser {
   using namespace m4c0::parser;
+  using type = int;
 }
 namespace mal::parser::recursion {
   struct form {
-    constexpr result<nil> operator()(input_t in) const noexcept;
+    constexpr result<type> operator()(input_t in) const;
   };
 }
 namespace mal::parser {
-  // Shamelessly avoiding <functional> due to its compilation weight
-  struct multiplies {
-    [[nodiscard]] constexpr auto operator()(auto a, auto b) const noexcept {
-      return a * b;
-    }
-  };
+  static constexpr const auto blanks = many(skip(match_any_of(" \r\n\t,")));
 
-  static constexpr auto lparen = match('(');
-  static constexpr auto rparen = match(')');
+  static constexpr const auto lparen = match('(') & blanks;
+  static constexpr const auto rparen = blanks & skip(match(')'));
 
-  static constexpr auto plus = match('+');
-  static constexpr auto minus = match('-');
-  static constexpr auto mult = match('*');
-  static constexpr auto div = match('/');
+  static constexpr const auto plus = match('+');
+  static constexpr const auto minus = match('-');
+  static constexpr const auto mult = match('*');
+  static constexpr const auto div = match('/');
 
-  static constexpr auto blanks = many(skip(match_any_of(" \r\n\t,")));
+  static constexpr const auto number = match_s32();
 
-  static constexpr auto sign = minus & -1 | 1;
-  static constexpr auto number = combine(sign, match_u32(), multiplies());
-
-  static constexpr auto form = blanks & recursion::form();
+  static constexpr const auto form = blanks & recursion::form();
 }
 namespace mal::parser::core {
-  static constexpr auto sum = plus & many(form);
-  static constexpr auto subtract = minus & many(form);
-  static constexpr auto multiply = mult & many(form);
-  static constexpr auto divide = div & many(form);
+  type to_int(type value);
 
-  static constexpr auto any = sum | subtract | multiply | divide;
+  static constexpr const auto int_form = form & to_int;
+
+  static constexpr const auto sum = plus & many(int_form);
+  static constexpr const auto subtract = minus & int_form & many(int_form);
+  static constexpr const auto multiply = mult & many(int_form);
+  static constexpr const auto divide = div & int_form & many(int_form);
+
+  static constexpr const auto any = sum | subtract | multiply | divide;
 }
 namespace mal::parser {
-  static constexpr auto list = lparen & blanks & core::any & blanks & rparen;
+  static constexpr const auto empty_list = lparen & rparen & 99;
+  static constexpr const auto list = lparen & core::any & rparen & 88;
 
-  static constexpr auto non_form = skip(list) | skip(number);
+  static constexpr const auto non_form = empty_list | list | number;
 
-  constexpr result<nil> recursion::form::operator()(input_t in) const noexcept {
+  constexpr result<type> recursion::form::operator()(input_t in) const {
     return non_form(in);
   }
-  static constexpr auto program = many(skip(form));
 }
