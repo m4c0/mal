@@ -13,7 +13,7 @@ namespace mal::parser {
 }
 
 namespace mal::parser {
-  static constexpr const auto list = lparen & (core<form>::any) & rparen & type {};
+  static constexpr const auto list = lparen & (core<form>::any) + rparen;
 
   static constexpr const auto number = match_s32() & wrap::constant;
 

@@ -8,6 +8,10 @@ namespace mal::parser::wrap {
     type m_value;
 
   public:
+    constexpr int_op_wrap() noexcept = default;
+    constexpr explicit int_op_wrap(type v) noexcept : m_value { v } {
+    }
+
     T operator+(type v) const noexcept;
 
     [[nodiscard]] static constexpr auto unwrap() noexcept {
@@ -16,10 +20,18 @@ namespace mal::parser::wrap {
       };
     }
   };
-  struct sum : int_op_wrap<sum> {};
-  struct sub : int_op_wrap<sub> {};
-  struct mult : int_op_wrap<mult> {};
-  struct div : int_op_wrap<div> {};
+  struct sum : int_op_wrap<sum> {
+    using int_op_wrap::int_op_wrap;
+  };
+  struct sub : int_op_wrap<sub> {
+    using int_op_wrap::int_op_wrap;
+  };
+  struct mult : int_op_wrap<mult> {
+    using int_op_wrap::int_op_wrap;
+  };
+  struct div : int_op_wrap<div> {
+    using int_op_wrap::int_op_wrap;
+  };
 
   type constant(int v) noexcept;
 }
