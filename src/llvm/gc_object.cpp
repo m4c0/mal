@@ -1,5 +1,6 @@
 #include "gc_object.hpp"
 
+#include <iostream>
 #include <vector>
 
 static std::vector<size_t *> & gc_roots() noexcept {
@@ -39,6 +40,7 @@ void mal::gc_mark(void * ptr) noexcept {
 void mal::gc_sweep() noexcept {
   auto & cur_gen = gc_gen();
   auto & roots = gc_roots();
+  std::cerr << "GC - gen=" << cur_gen << " - before=" << roots.size();
   for (auto it = roots.begin(); it != roots.end();) {
     if (**it < cur_gen) {
       ::operator delete (*it + 1, mal::gc {});
@@ -46,5 +48,6 @@ void mal::gc_sweep() noexcept {
       ++it;
     }
   }
+  std::cerr << " - after=" << roots.size() << "\n";
   cur_gen++;
 }
