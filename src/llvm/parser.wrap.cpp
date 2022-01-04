@@ -9,12 +9,13 @@ namespace mal::parser::wrap {
     return llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(ctx), v);
   }
   type empty_list(nil /**/) noexcept {
-    auto & ctx = context::instance()->ctx();
-    return llvm::Constant::getNullValue(llvm::Type::getInt32PtrTy(ctx));
+    return llvm::Constant::getNullValue(context::instance()->list_type());
+  }
+  type empty_map(nil /**/) noexcept {
+    return llvm::Constant::getNullValue(context::instance()->map_type());
   }
   type empty_vector(nil /**/) noexcept {
-    auto & ctx = context::instance()->ctx();
-    return llvm::Constant::getNullValue(llvm::Type::getInt32PtrTy(ctx));
+    return llvm::Constant::getNullValue(context::instance()->vector_type());
   }
 
   template<>

@@ -8,7 +8,9 @@ using namespace mal;
 
 static const char * pr_str_for_type(parser::type v) {
   if (v->getType()->isIntegerTy()) return "mal_intr_prstr_int";
-  if (v->getType() == llvm::IntegerType::getInt32PtrTy(context::instance()->ctx())) return "mal_intr_prstr_list";
+  if (v->getType() == context::instance()->list_type()) return "mal_intr_prstr_list";
+  if (v->getType() == context::instance()->map_type()) return "mal_intr_prstr_map";
+  if (v->getType() == context::instance()->vector_type()) return "mal_intr_prstr_vector";
   throw std::runtime_error("unknown type");
 }
 

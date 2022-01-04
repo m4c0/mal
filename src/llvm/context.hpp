@@ -5,11 +5,19 @@
 #include "llvm/IR/LLVMContext.h"
 
 namespace mal {
+  class list;
+  class map;
+  class vector;
+
   class context {
     llvm::LLVMContext m_ctx {};
     std::unique_ptr<llvm::Module> m_module {};
     llvm::IRBuilder<> m_builder { m_ctx };
     llvm::Function * m_fn {};
+
+    llvm::Type * m_list_tp { llvm::StructType::create(m_ctx, "mal_type_list") };
+    llvm::Type * m_map_tp { llvm::StructType::create(m_ctx, "mal_type_map") };
+    llvm::Type * m_vector_tp { llvm::StructType::create(m_ctx, "mal_type_vector") };
 
     context() = default;
 
@@ -27,6 +35,16 @@ namespace mal {
       return m_module.get();
     }
 
+    [[nodiscard]] auto * list_type() noexcept {
+      return m_list_tp;
+    }
+    [[nodiscard]] auto * map_type() noexcept {
+      return m_map_tp;
+    }
+    [[nodiscard]] auto * vector_type() noexcept {
+      return m_vector_tp;
+    }
+
     [[nodiscard]] static context * instance() noexcept {
       static context i {};
       return &i;
@@ -34,6 +52,12 @@ namespace mal {
   };
 
   namespace llvm_helper {
+    static constexpr auto get_struct_by_name(const char * name) noexcept {
+      return [name](auto & ctx) noexcept {
+        return llvm::StructType::getTypeByName(ctx, name);
+      };
+    }
+
     template<typename Ret>
     struct type_fns;
     template<>
@@ -45,10 +69,16 @@ namespace mal {
       static constexpr const auto getter = llvm::Type::getInt32Ty;
     };
     template<>
-    struct type_fns<llvm::Value **> {
-      static constexpr const auto getter = [](auto & ctx) {
-        return llvm::Type::getInt32PtrTy(ctx);
-      };
+    struct type_fns<mal::list *> {
+      static constexpr const auto getter = get_struct_by_name("mal_type_list");
+    };
+    template<>
+    struct type_fns<mal::map *> {
+      static constexpr const auto getter = get_struct_by_name("mal_type_map");
+    };
+    template<>
+    struct type_fns<mal::vector *> {
+      static constexpr const auto getter = get_struct_by_name("mal_type_vector");
     };
 
     template<typename Ret, typename... Args>

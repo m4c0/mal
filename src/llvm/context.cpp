@@ -23,14 +23,15 @@ static const struct llvm_init { // NOLINT
 
 void context::begin() noexcept {
   m_module = std::make_unique<llvm::Module>("mal", m_ctx);
+  m_module->getOrInsertFunction("mal_intr_prstr_int", llvm_helper::function_type(mal_intr_prstr_int));
+  m_module->getOrInsertFunction("mal_intr_prstr_list", llvm_helper::function_type(mal_intr_prstr_list));
+  m_module->getOrInsertFunction("mal_intr_prstr_map", llvm_helper::function_type(mal_intr_prstr_map));
+  m_module->getOrInsertFunction("mal_intr_prstr_vector", llvm_helper::function_type(mal_intr_prstr_vector));
 
   auto * fn_tp = llvm::FunctionType::get(llvm::Type::getVoidTy(m_ctx), false);
   m_fn = llvm::Function::Create(fn_tp, llvm::Function::ExternalLinkage, "mal", *m_module);
 
   m_builder.SetInsertPoint(llvm::BasicBlock::Create(m_ctx, "entry", m_fn));
-
-  m_module->getOrInsertFunction("mal_intr_prstr_int", llvm_helper::function_type(mal_intr_prstr_int));
-  m_module->getOrInsertFunction("mal_intr_prstr_list", llvm_helper::function_type(mal_intr_prstr_list));
 }
 void context::end() {
   if (llvm::verifyModule(*m_module, &llvm::errs(), nullptr)) {
