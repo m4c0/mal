@@ -30,7 +30,8 @@ loop:
   br i1 %is-null, label %exit, label %rep
 
 rep:
-  call i32 @puts(i8* %line)
+  %res = call i8* @rep(i8* %line)
+  call i32 @puts(i8* %res)
   call void @free(i8* %line)
   br label %loop
   
