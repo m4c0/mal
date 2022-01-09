@@ -36,6 +36,15 @@ define private void @find_token_end() {
   %new = getelementptr i8, i8* %orig, i64 1
   switch i8 %c, label %other [
     i8 0, label %eof
+    i8 39, label %single ; '
+    i8 40, label %single ; (
+    i8 41, label %single ; )
+    i8 91, label %single ; [
+    i8 93, label %single ; ]
+    i8 94, label %single ; ^
+    i8 96, label %single ; `
+    i8 123, label %single ; {
+    i8 125, label %single ; }
     i8 126, label %tilde
   ]
 
@@ -48,6 +57,10 @@ tilde:
   %is_at = icmp eq i8 %next_c, 64
   %len = select i1 %is_at, i32 2, i32 1
   store i32 %len, i32* getelementptr (%st.str, %st.str* @token_current, i64 0, i32 1)
+  br label %exit
+
+single:
+  store i32 1, i32* getelementptr (%st.str, %st.str* @token_current, i64 0, i32 1)
   br label %exit
 
 other:
