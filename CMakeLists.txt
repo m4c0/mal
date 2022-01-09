@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(mal VERSION 0.1 LANGUAGES CXX)
+project(mal VERSION 0.1 LANGUAGES CXX ASM)
 
 enable_testing()
 
@@ -37,4 +37,5 @@ function(mal_perf LANG TARGET)
 endfunction()
 
 #add_subdirectory(src/cpp)
-add_subdirectory(src/llvm)
+#add_subdirectory(src/llvm)
+add_subdirectory(src/llvm-ir)
