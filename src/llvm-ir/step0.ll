@@ -1,5 +1,6 @@
 declare i8* @readline(i8* %prompt)
 declare i32 @puts(i8* %str)
+declare void @free(i8* %ptr)
 
 @.prompt = constant [7 x i8] c"user> \00"
 
@@ -30,6 +31,7 @@ loop:
 
 rep:
   call i32 @puts(i8* %line)
+  call void @free(i8* %line)
   br label %loop
   
 exit:
