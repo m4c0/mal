@@ -1,11 +1,19 @@
+; externals
 declare i8* @readline(i8* %prompt)
 declare i32 @puts(i8* %str)
 declare void @free(i8* %ptr)
 
+; internals
+declare void @tokenise(i8* %in)
+declare i8* @token_next()
+declare i8* @token_peek()
+
 @.prompt = constant [7 x i8] c"user> \00"
 
 define i8* @READ(i8* %in) {
-  ret i8* %in
+  call void @tokenise(i8* %in)
+  %res = call i8* @token_peek()
+  ret i8* %res
 }
 define i8* @EVAL(i8* %in) {
   ret i8* %in

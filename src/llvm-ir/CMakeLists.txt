@@ -4,15 +4,22 @@ set(LLVM_BINARY_DIR "${LLVM_DIR}/bin" CACHE PATH "Path to LLVM binaries")
 find_program(LLC NAMES llc HINTS ${LLVM_BINARY_DIR} REQUIRED)
 find_library(READLINE NAMES readline REQUIRED DOC "GNU readline")
 
-function(mal_ir_step NAME)
-  set(TARGET "ir-${NAME}")
+function(mal_ir_add_asm TARGET NAME)
   set(IR "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}.ll")
   set(ASM "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.s")
 
-  add_executable(${TARGET} ${ASM})
+  target_sources(${TARGET} PRIVATE ${ASM})
+  add_custom_command(OUTPUT ${ASM} COMMAND ${LLC} ${IR} -o ${ASM} MAIN_DEPENDENCY ${IR})
+endfunction()
+
+function(mal_ir_step NAME)
+  set(TARGET "ir-${NAME}")
+
+  add_executable(${TARGET})
   target_link_libraries(${TARGET} PRIVATE ${READLINE})
 
-  add_custom_command(OUTPUT ${ASM} COMMAND ${LLC} ${IR} -o ${ASM} MAIN_DEPENDENCY ${IR})
+  mal_ir_add_asm(${TARGET} ${NAME})
+  mal_ir_add_asm(${TARGET} reader)
 endfunction()
 
 mal_ir_step(step0)
