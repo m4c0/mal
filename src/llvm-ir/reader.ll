@@ -1,28 +1,18 @@
-; Will be a pointer inside the line returned by readline
-; Assumes caller manages the original pointer
-@token_current = private global i8* null
-define i8* @token_peek() {
-  %res = load i8*, i8** @token_current
-  ret i8* %res
-}
+%st.str = type { i8*, i32 };
+@token_current = private global %st.str zeroinitializer
 
-define private i8 @peek() {
-  %str = load i8*, i8** @token_current
-  %c = load i8, i8* %str
-  ret i8 %c
-}
-define private void @adv() {
-  %ptr = load i8*, i8** @token_current
-  %new = getelementptr i8, i8* %ptr, i64 1
-  store i8* %new, i8** @token_current
-  ret void
+define %st.str @token_peek() {
+  %res = load %st.str, %st.str* @token_current
+  ret %st.str %res
 }
 
 define private void @skip_spaces() {
+  %orig = load i8*, i8** getelementptr (%st.str, %st.str* @token_current, i64 0, i32 0)
   br label %loop
 
 loop:
-  %c = call i8 @peek()
+  %ptr = phi i8* [%orig, %0], [%new, %skip]
+  %c = load i8, i8* %ptr
   switch i8 %c, label %exit [
     i8 9, label %skip  ; tab
     i8 10, label %skip ; LF
@@ -32,26 +22,59 @@ loop:
   ]
 
 skip:
-  call void @adv()
+  %new = getelementptr i8, i8* %ptr, i64 1
   br label %loop
+
+exit:
+  store i8* %ptr, i8** getelementptr (%st.str, %st.str* @token_current, i64 0, i32 0)
+  ret void
+}
+
+define private void @find_token_end() {
+  %orig = load i8*, i8** getelementptr (%st.str, %st.str* @token_current, i64 0, i32 0)
+  %c = load i8, i8* %orig
+  %new = getelementptr i8, i8* %orig, i64 1
+  switch i8 %c, label %other [
+    i8 0, label %eof
+    i8 126, label %tilde
+  ]
+
+eof:
+  store i32 0, i32* getelementptr (%st.str, %st.str* @token_current, i64 0, i32 1)
+  br label %exit
+
+tilde:
+  %next_c = load i8, i8* %new
+  %is_at = icmp eq i8 %next_c, 64
+  %len = select i1 %is_at, i32 2, i32 1
+  store i32 %len, i32* getelementptr (%st.str, %st.str* @token_current, i64 0, i32 1)
+  br label %exit
+
+other:
+  br label %exit
 
 exit:
   ret void
 }
-define private void @find_next_token() {
+
+define private void @find_next_token(i8* %new_start) {
+  store i8* %new_start, i8** getelementptr (%st.str, %st.str* @token_current, i64 0, i32 0)
+
   call void @skip_spaces()
+  call void @find_token_end()
   ret void
 }
 
-define i8* @token_next() {
-  call void @find_next_token()
-  %res = call i8* @token_peek()
-  ret i8* %res
+define void @token_next() {
+  %orig = load i8*, i8** getelementptr (%st.str, %st.str* @token_current, i64 0, i32 0)
+  %len = load i32, i32* getelementptr (%st.str, %st.str* @token_current, i64 0, i32 1)
+  %ptr = getelementptr i8, i8* %orig, i32 %len
+  call void @find_next_token(i8* %ptr)
+  ret void
 }
 
 define void @tokenise(i8* %in) {
-  store i8* %in, i8** @token_current
-  call void @find_next_token()
+  call void @find_next_token(i8* %in)
   ret void
 }
 
