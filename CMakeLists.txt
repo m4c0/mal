@@ -3,11 +3,13 @@ project(mal VERSION 0.1 LANGUAGES CXX ASM)
 
 enable_testing()
 
+find_package(m4c0 REQUIRED CONFIG)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(mal_defs INTERFACE)
 target_compile_features(mal_defs INTERFACE cxx_std_20)
-target_include_directories(mal_defs INTERFACE ext/m4c0-stl/parser/inc)
+target_link_libraries(mal_defs INTERFACE m4c0-parser)
 
 function(mal_step_test TEST_NAME MAL_FILE TARGET)
   set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- $<TARGET_FILE:${TARGET}>)
@@ -36,6 +38,6 @@ function(mal_perf LANG TARGET)
     DEPENDS ${LANG}-perf3)
 endfunction()
 
-#add_subdirectory(src/cpp)
+add_subdirectory(src/cpp)
 #add_subdirectory(src/llvm)
 add_subdirectory(src/llvm-ir)
