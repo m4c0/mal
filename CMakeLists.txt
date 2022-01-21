@@ -11,8 +11,8 @@ add_library(mal_defs INTERFACE)
 target_compile_features(mal_defs INTERFACE cxx_std_20)
 target_link_libraries(mal_defs INTERFACE m4c0-parser)
 
-function(mal_step_test TEST_NAME MAL_FILE TARGET)
-  set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- $<TARGET_FILE:${TARGET}>)
+function(mal_step_test_script TEST_NAME MAL_FILE EXE)
+  set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${EXE})
   set(DIR ${CMAKE_SOURCE_DIR}/impls/tests)
 
   add_test(NAME ${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD})
@@ -21,6 +21,10 @@ function(mal_step_test TEST_NAME MAL_FILE TARGET)
     # There is not step5 in mal's own implementation
     add_test(NAME mal.${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD} ../mal/${MAL_FILE}.mal)
   endif()
+endfunction()
+
+function(mal_step_test TEST_NAME MAL_FILE TARGET)
+  mal_step_test_script(${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}>)
 endfunction()
 
 function(mal_perf_step LANG TARGET NAME)
@@ -38,6 +42,7 @@ function(mal_perf LANG TARGET)
     DEPENDS ${LANG}-perf3)
 endfunction()
 
-add_subdirectory(src/cpp)
+#add_subdirectory(src/cpp)
 #add_subdirectory(src/llvm)
-add_subdirectory(src/llvm-ir)
+#add_subdirectory(src/llvm-ir)
+add_subdirectory(src/ocaml)
