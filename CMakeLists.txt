@@ -11,8 +11,8 @@ add_library(mal_defs INTERFACE)
 target_compile_features(mal_defs INTERFACE cxx_std_20)
 target_link_libraries(mal_defs INTERFACE m4c0-parser)
 
-function(mal_step_test_script TEST_NAME MAL_FILE EXE)
-  set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${EXE})
+function(mal_step_test_script TEST_NAME MAL_FILE)
+  set(CMD ../../runtest.py --deferrable --optional ${MAL_FILE}.mal -- ${ARGN})
   set(DIR ${CMAKE_SOURCE_DIR}/impls/tests)
 
   add_test(NAME ${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD})
