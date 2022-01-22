@@ -8,7 +8,7 @@ let rep str : string =
 
 try
   while true do
-    print_string Reader.prompt;
+    print_string "user> ";
     read_line () |> rep |> print_string;
     print_newline ();
   done;

@@ -1,2 +1,0 @@
-let prompt = "user> "
-
