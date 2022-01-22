@@ -1,4 +1,8 @@
-let read str : string = str
+let read str : string =
+  let explode s = List.init (String.length s) (String.get s) in
+  try str |> explode |> Tokeniser.next |> String.concat " "
+  with Tokeniser.Eof -> "EOF"
+
 let eval str : string = str
 let print str : string = str
 

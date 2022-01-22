@@ -1,5 +1,5 @@
 (executables
  (names step0 step1)
- (modules reader step0 step1)
+ (modules reader step0 step1 tokeniser)
  (modes byte exe))
 
