@@ -17,14 +17,13 @@ function(mal_step_test_script TEST_NAME MAL_FILE)
 
   add_test(NAME ${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD})
 
-  if(NOT MAL_FILE STREQUAL "step5_tco")
-    # There is not step5 in mal's own implementation
-    add_test(NAME mal.${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD} ../mal/${MAL_FILE}.mal)
-  endif()
 endfunction()
 
 function(mal_step_test TEST_NAME MAL_FILE TARGET)
   mal_step_test_script(${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}>)
+endfunction()
+function(mal_step_selfhost_test TEST_NAME MAL_FILE TARGET)
+  mal_step_test_script(mal-${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}> ../mal/${MAL_FILE}.mal)
 endfunction()
 
 function(mal_perf_step LANG TARGET NAME)

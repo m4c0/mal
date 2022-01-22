@@ -19,6 +19,7 @@ add_executable(cpp-stepX
   types.holders.cpp
   stepA.cpp)
 target_link_libraries(cpp-stepX PUBLIC mal_defs)
+
 mal_step_test(cpp-step2 step2_eval     cpp-stepX)
 mal_step_test(cpp-step3 step3_env      cpp-stepX)
 mal_step_test(cpp-step4 step4_if_fn_do cpp-stepX)
@@ -28,5 +29,15 @@ mal_step_test(cpp-step7 step7_quote    cpp-stepX)
 mal_step_test(cpp-step8 step8_macros   cpp-stepX)
 mal_step_test(cpp-step9 step9_try      cpp-stepX)
 mal_step_test(cpp-stepA stepA_mal      cpp-stepX)
+
+mal_step_selfhost_test(cpp-step2 step2_eval     cpp-stepX)
+mal_step_selfhost_test(cpp-step3 step3_env      cpp-stepX)
+mal_step_selfhost_test(cpp-step4 step4_if_fn_do cpp-stepX)
+mal_step_selfhost_test(cpp-step6 step6_file     cpp-stepX)
+mal_step_selfhost_test(cpp-step7 step7_quote    cpp-stepX)
+mal_step_selfhost_test(cpp-step8 step8_macros   cpp-stepX)
+mal_step_selfhost_test(cpp-step9 step9_try      cpp-stepX)
+mal_step_selfhost_test(cpp-stepA stepA_mal      cpp-stepX)
+
 mal_perf(cpp cpp-stepX)
 
