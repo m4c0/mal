@@ -1,3 +1,4 @@
-type t = unit
-
-let x = 0
+type t =
+  | Integer of int
+  | Symbol of string
+  | List of t list

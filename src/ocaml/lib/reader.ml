@@ -1,10 +1,26 @@
-let read_atom _ = failwith "TODO"
+let read_str str =
+  let open Tokeniser in
+  let open Seq in
 
-let read_list _ = failwith "TODO"
+  let rec read_atom ts =
+    match ts() with
+    | Cons(Symbol(x), xs) -> (Types.Symbol(x), xs)
+    | Cons(String(x), xs) -> (Types.Symbol(x), xs)
+    | _ -> raise Tokeniser.Eof
+  and read_list acc ts =
+    match ts() with
+    | Nil -> raise Tokeniser.Eof
+    | Cons(Blank, xs) -> read_list acc xs
+    | Cons(Symbol(")"), xs) -> (Types.List(acc), xs)
+    | Cons(_, _) ->
+        match read_form ts with (form, xs) -> read_list (acc @ [form]) xs
+  and read_form ts =
+    match ts() with
+    | Nil -> raise Tokeniser.Eof
+    | Cons(Blank, xs) -> read_form xs
+    | Cons(Symbol("("), xs) -> read_list [] xs
+    | Cons(_, _) -> read_atom ts
+  in
 
-let read_form tokens : Types.t =
-  match tokens with
-  | [] -> raise Tokeniser.Eof
-  | "(" :: xs -> read_list xs
-  | _ -> read_atom tokens 
+  str |> tokenise |> read_form
 

@@ -35,6 +35,7 @@ let rec take_symbol acc s =
   let open Seq in
   match s() with
   | Nil
+  | Cons((' ' | ',' | '\t' | '\r' | '\n'), _)
   | Cons(('[' | ']' | '{' | '}' | '(' | ')' | '\'' | '`' | '^'), _) -> (Symbol(acc), s)
   | Cons(x, xs) -> take_symbol (acc ^ (String.make 1 x)) xs
 
