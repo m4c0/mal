@@ -1,10 +1,16 @@
+let int_or_sym s = 
+  match int_of_string_opt s with
+  | None -> Types.Symbol(s)
+  | Some(i) -> Types.Integer(i)
+
 let read_str str =
   let open Tokeniser in
   let open Seq in
 
+
   let rec read_atom ts =
     match ts() with
-    | Cons(Symbol(x), xs) -> (Types.Symbol(x), xs)
+    | Cons(Symbol(x), xs) -> (int_or_sym x, xs)
     | Cons(String(x), xs) -> (Types.Symbol(x), xs)
     | _ -> raise Tokeniser.Eof
   and read_list acc ts =
@@ -22,5 +28,6 @@ let read_str str =
     | Cons(_, _) -> read_atom ts
   in
 
-  str |> tokenise |> read_form
+  let (form, _) = str |> tokenise |> read_form in
+  form
 
