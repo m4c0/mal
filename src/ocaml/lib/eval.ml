@@ -29,6 +29,9 @@ let rec eval env ast =
         end in
         binder l
     | List(Symbol("let*") :: _) -> raise Invalid_form
+    | List(Symbol("do") :: []) -> raise Invalid_form
+    | List(Symbol("do") :: l) -> 
+        l |> List.map eval_form |> List.rev |> List.hd
     | List(_) -> ast |> eval_ast |> eval_list
     | x -> eval_ast x
   and eval_list l =
