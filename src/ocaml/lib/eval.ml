@@ -32,8 +32,19 @@ let rec eval env ast =
     | List(Symbol("do") :: []) -> raise Invalid_form
     | List(Symbol("do") :: l) -> 
         l |> List.map eval_form |> List.rev |> List.hd
+    | List(Symbol("if") :: cond :: tr :: []) -> if_form cond tr Nil
+    | List(Symbol("if") :: cond :: tr :: fl :: []) -> if_form cond tr fl
+    | List(Symbol("if") :: []) -> raise Invalid_form
     | List(_) -> ast |> eval_ast |> eval_list
     | x -> eval_ast x
+  and if_form cond tr fl =
+    let c = begin
+      match eval_form cond with
+      | Nil -> false
+      | Bool(x) -> x
+      | _ -> true
+    end in
+    if c then eval_form tr else eval_form fl
   and eval_list l =
     match l with
     | List([]) -> List([])

@@ -26,3 +26,13 @@ let step2 =
     |> set "-" Core.sub
     |> set "*" Core.mult
     |> set "/" Core.div
+    |> set "prn" Core.prn
+    |> set "list" Core.list_
+    |> set "list?" Core.is_list
+    |> set "empty?" Core.is_empty
+    |> set "count" Core.count
+    |> set "=" Core.equal
+    |> set "<" Core.lt
+    |> set "<=" Core.lte
+    |> set ">" Core.gt
+    |> set ">=" Core.gte
