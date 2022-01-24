@@ -60,7 +60,7 @@ let token_fn s =
   | Cons('"', xs) -> Some(take_string "\"" xs)
   | Cons(':', xs) -> Some(take_keyword xs)
   | Cons((' ' | ',' | '\t' | '\r' | '\n'), xs) -> Some(take_spaces xs)
-  | Cons(('[' | ']' | '{' | '}' | '(' | ')' | '\'' | '`' | '^') as x, xs)
+  | Cons(('[' | ']' | '{' | '}' | '(' | ')' | '\'' | '`' | '^' | '@') as x, xs)
     -> Some(Symbol(String.make 1 x), xs)
   | Cons(x, xs) -> Some(take_symbol (String.make 1 x) xs)
 

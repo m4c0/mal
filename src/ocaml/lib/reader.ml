@@ -45,6 +45,11 @@ let read_str str =
         let new_acc = add (String key) value acc in
         read_hashmap new_acc xs
     | _ -> raise Tokeniser.Eof
+  and read_macro sym ts =
+    let tsym = Types.Symbol sym in
+    let (form, xs) = read_form ts in
+    let tlst = Types.List [tsym; form] in
+    (tlst, xs)
   and read_form ts =
     match ts() with
     | Nil -> raise Tokeniser.Eof
@@ -52,6 +57,11 @@ let read_str str =
     | Cons(Symbol("("), xs) -> read_list [] xs
     | Cons(Symbol("["), xs) -> read_vector [] xs
     | Cons(Symbol("{"), xs) -> read_hashmap Types.TMap.empty xs
+    | Cons(Symbol("'"), xs) -> read_macro "quote" xs
+    | Cons(Symbol("`"), xs) -> read_macro "quasiquote" xs
+    | Cons(Symbol("~"), xs) -> read_macro "unquote" xs
+    | Cons(Symbol("~@"), xs) -> read_macro "splice-unquote" xs
+    | Cons(Symbol("@"), xs) -> read_macro "deref" xs
     | Cons(_, _) -> read_atom ts
   in
 
