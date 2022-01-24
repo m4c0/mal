@@ -2,6 +2,7 @@ exception Eof
 
 type token = 
   | Blank
+  | Keyword of string
   | String of string
   | Symbol of string
 
@@ -45,6 +46,11 @@ let take_unquote s =
   | Cons('@', xs) -> (Symbol("~@"), xs)
   | _ -> (Symbol("~"), s)
 
+let take_keyword s =
+  match take_symbol ":" s with
+  | (Symbol(s), xs) -> (Keyword(s), xs)
+  | x -> x
+
 let token_fn s =
   let open Seq in
   match s() with
@@ -52,6 +58,7 @@ let token_fn s =
   | Cons(';', xs) -> Some(take_comment xs)
   | Cons('~', xs) -> Some(take_unquote xs)
   | Cons('"', xs) -> Some(take_string "\"" xs)
+  | Cons(':', xs) -> Some(take_keyword xs)
   | Cons((' ' | ',' | '\t' | '\r' | '\n'), xs) -> Some(take_spaces xs)
   | Cons(('[' | ']' | '{' | '}' | '(' | ')' | '\'' | '`' | '^') as x, xs)
     -> Some(Symbol(String.make 1 x), xs)

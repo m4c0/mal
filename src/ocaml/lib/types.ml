@@ -19,8 +19,9 @@ module TMap = Map.Make(HashKey)
 
 type t =
   | Bool of bool
-  | HashMap of t TMap.t
+  | Hashmap of t TMap.t
   | Integer of int
+  | Keyword of string
   | List of t list
   | Nil
   | String of string
