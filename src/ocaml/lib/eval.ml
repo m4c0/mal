@@ -1,20 +1,25 @@
 module Env = Map.Make(String)
 
+exception Unknown_symbol of string
 exception Invalid_callable
 
-let rec eval env ast =
-  let eval_ast ast =
+let eval env ast =
+  let rec eval_ast ast =
     match ast with
-    | Types.Symbol(x) -> Env.find x env
-    | Types.List(l) -> Types.List(List.map (eval env) l)
+    | Types.Symbol(x) ->
+        begin
+          try Env.find x env 
+          with Not_found -> raise (Unknown_symbol x)
+        end
+    | Types.List(l) -> Types.List(List.map eval_form l)
     | _ -> ast
-  in
-  match ast with
-  | Types.List([]) -> ast
-  | Types.List(fn :: args) ->
-      begin
-        match eval_ast fn with
-        | Types.Lambda(l) -> args |> List.map eval_ast |> l
-        | _ -> raise Invalid_callable
-      end
-  | _ -> eval_ast ast
+  and eval_form ast =
+    match eval_ast ast with
+    | Types.List(l) -> eval_list l
+    | x -> x
+  and eval_list l =
+    match l with
+    | [] -> Types.List([])
+    | Types.Lambda(fn) :: args -> fn args
+    | _ -> raise Invalid_callable
+  in eval_form ast
