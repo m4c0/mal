@@ -1,25 +1,39 @@
 exception Invalid_form
 exception Invalid_callable
 
-let eval env ast =
+let rec eval env ast =
+  let open Types in
   let rec eval_ast ast =
     match ast with
-    | Types.Symbol(x) -> Env.find !env x
-    | Types.List(l) -> Types.List(List.map eval_form l)
-    | Types.Vector(v) -> Types.Vector(List.map eval_form v)
-    | Types.Hashmap(m) -> Types.Hashmap(Types.TMap.map eval_form m)
+    | Symbol(x) -> Env.find !env x
+    | List(l) -> List(List.map eval_form l)
+    | Vector(v) -> Vector(List.map eval_form v)
+    | Hashmap(m) -> Hashmap(TMap.map eval_form m)
     | _ -> ast
   and eval_form ast =
     match ast with
-    | Types.List(Types.Symbol("def!") :: Types.Symbol(key) :: v :: []) ->
+    | List(Symbol("def!") :: Symbol(key) :: v :: []) ->
         let value = eval_form v in
         env := Env.set key value !env; value
-    | Types.List(Types.Symbol("def!") :: _) -> raise Invalid_form
-    | Types.List(_) -> ast |> eval_ast |> eval_list
+    | List(Symbol("def!") :: _) -> raise Invalid_form
+    | List(Symbol("let*") :: (List(l) | Vector(l)) :: form :: []) ->
+        let new_env = env |> Env.extend |> ref in
+        let rec binder ll = begin
+          match ll with
+          | [] -> eval new_env form
+          | Symbol(k) :: v :: xs -> 
+              let vv = eval new_env v in
+              new_env := Env.set k vv !new_env;
+              binder xs
+          | _ -> raise Invalid_form
+        end in
+        binder l
+    | List(Symbol("let*") :: _) -> raise Invalid_form
+    | List(_) -> ast |> eval_ast |> eval_list
     | x -> eval_ast x
   and eval_list l =
     match l with
-    | Types.List([]) -> Types.List([])
-    | Types.List(Types.Lambda(fn) :: args) -> fn args
+    | List([]) -> List([])
+    | List(Lambda(fn) :: args) -> fn args
     | _ -> raise Invalid_callable
   in eval_form ast
