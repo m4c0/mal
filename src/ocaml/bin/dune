@@ -1,0 +1,5 @@
+(executables
+ (names step0 step1 step2)
+ (libraries lib)
+ (modes byte exe))
+
