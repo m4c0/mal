@@ -4,7 +4,7 @@ let rep env str =
   | Core.Invalid_args -> "Invalid arguments"
   | Eval.Invalid_callable -> "Tryed to call something that is not a function"
   | Eval.Invalid_form -> "Mismatched parameters in core call"
-  | Env.Unknown_symbol(s) -> "Unknown symbol: " ^ s
+  | Env.Unknown_symbol(s) -> s ^ " not found"
   | Tokeniser.Eof -> "EOF"
 
 let env = ref Env.step2
