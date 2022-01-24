@@ -50,6 +50,12 @@ let read_str str =
     let (form, xs) = read_form ts in
     let tlst = Types.List [tsym; form] in
     (tlst, xs)
+  and read_withmeta ts =
+    let (meta, ms) = read_form ts in
+    let (data, ds) = read_form ms in
+    let tsym = Types.Symbol "with-meta" in
+    let tlst = Types.List [tsym; data; meta] in
+    (tlst, ds)
   and read_form ts =
     match ts() with
     | Nil -> raise Tokeniser.Eof
@@ -62,6 +68,7 @@ let read_str str =
     | Cons(Symbol("~"), xs) -> read_macro "unquote" xs
     | Cons(Symbol("~@"), xs) -> read_macro "splice-unquote" xs
     | Cons(Symbol("@"), xs) -> read_macro "deref" xs
+    | Cons(Symbol("^"), xs) -> read_withmeta xs
     | Cons(_, _) -> read_atom ts
   in
 
