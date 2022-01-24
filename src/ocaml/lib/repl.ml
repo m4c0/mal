@@ -3,7 +3,7 @@ let rep env str =
   with
   | Core.Invalid_args -> "Invalid arguments"
   | Eval.Invalid_callable -> "Tryed to call something that is not a function"
-  | Eval.Unknown_symbol(s) -> "Unknown symbol: " ^ s
+  | Env.Unknown_symbol(s) -> "Unknown symbol: " ^ s
   | Tokeniser.Eof -> "EOF"
 
 let env = Env.step2
