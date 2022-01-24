@@ -12,6 +12,8 @@ let eval env ast =
           with Not_found -> raise (Unknown_symbol x)
         end
     | Types.List(l) -> Types.List(List.map eval_form l)
+    | Types.Vector(v) -> Types.Vector(List.map eval_form v)
+    | Types.Hashmap(m) -> Types.Hashmap(Types.TMap.map eval_form m)
     | _ -> ast
   and eval_form ast =
     match eval_ast ast with
