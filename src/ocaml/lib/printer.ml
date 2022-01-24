@@ -15,6 +15,7 @@ let rec pr_str t =
   | Keyword(s) -> s
   | String(s) -> s 
   | Symbol(s) -> s 
+  | Lambda(_) -> "#<function>"
   | List(l) ->
       let ls = List.map pr_str l in
       "(" ^ (String.concat " " ls) ^ ")" 

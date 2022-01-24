@@ -22,6 +22,7 @@ type t =
   | Hashmap of t TMap.t
   | Integer of int
   | Keyword of string
+  | Lambda of (t list -> t)
   | List of t list
   | Nil
   | String of string
