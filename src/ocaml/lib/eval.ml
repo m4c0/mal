@@ -43,6 +43,9 @@ let rec eval env ast =
 
     | List(Symbol("quote") :: x :: []) -> x
 
+    | List(Symbol("quasiquoteexpand") :: x :: []) -> quasiquote x
+    | List(Symbol("quasiquote") :: x :: []) -> x |> quasiquote |> eval_form
+
     | List(_) as x -> x |> eval_ast |> eval_list
     | x -> eval_ast x
   and if_form cond tr fl =
@@ -56,6 +59,18 @@ let rec eval env ast =
   and fn_closure params args body =
     let new_env = Env.bind !env params args |> ref in
     eval new_env body
+  and quasiquote_list elt rest =
+    match elt with
+    | List([Symbol("splice-unquote"); x]) -> List(Symbol("concat") :: x :: rest)
+    | _ -> List(Symbol("cons") :: (quasiquote elt) :: [(quasiquote (List rest))])
+  and quasiquote = function
+    | List([Symbol("unquote"); x]) -> x
+    | List([]) -> List([])
+    | Vector([]) -> List([Symbol("vec"); List([])])
+    | Vector(elt :: rest) -> List([Symbol("vec"); quasiquote_list elt rest])
+    | List(elt :: rest) -> quasiquote_list elt rest
+    | (Hashmap(_) | Symbol(_)) as x -> List([Symbol("quote"); x]) 
+    | x -> x
   and eval_list = function
     | List([]) -> List([])
     | List(Lambda(fn) :: args) -> fn args

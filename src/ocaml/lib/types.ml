@@ -36,9 +36,10 @@ let string_of_symbol tt =
   | Symbol(s) -> s
   | _ -> raise Expecting_symbol
 
-let list_of_list tt =
+let list_of_iter tt =
   match tt with
   | List(s) -> s
+  | Vector(s) -> s
   | _ -> raise Expecting_symbol
 
 let of_list x = List x

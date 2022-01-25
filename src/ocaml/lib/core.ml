@@ -112,8 +112,16 @@ let swap = Lambda (fun args ->
 let cons = Lambda (fun args ->
   match args with
   | [x; List(l)] -> List(x :: l)
+  | [x; Vector(l)] -> List(x :: l)
   | _ -> raise Invalid_args
 )
 let concat = Lambda (fun args ->
-  args |> List.map Types.list_of_list |> List.concat |> Types.of_list
+  args |> List.map Types.list_of_iter |> List.concat |> Types.of_list
+)
+
+let vec = Lambda (fun args ->
+  match args with
+  | [List(x)] -> Vector(x)
+  | [Vector(_) as x] -> x
+  | _ -> raise Invalid_args
 )

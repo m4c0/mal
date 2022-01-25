@@ -39,6 +39,7 @@ let env =
     |> Env.set "swap!" Core.swap
     |> Env.set "cons" Core.cons
     |> Env.set "concat" Core.concat
+    |> Env.set "vec" Core.vec
     |> ref
 
 let eval args = 
