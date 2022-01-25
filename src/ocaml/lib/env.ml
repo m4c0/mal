@@ -8,6 +8,7 @@ type t = {
   map: Types.t Map.t
 }
 
+let empty = { outer = None; map = Map.empty }
 let extend o = { outer = Some o; map = Map.empty }
 
 let rec find env key = 
@@ -28,19 +29,3 @@ let rec bind o binds exprs =
   | (hb::tb, he::te) -> set hb he (bind o tb te) 
   | (_, _) -> raise Invalid_binding
 
-let step2 =
-  { outer = None; map = Map.empty }
-    |> set "+" Core.sum
-    |> set "-" Core.sub
-    |> set "*" Core.mult
-    |> set "/" Core.div
-    |> set "prn" Core.prn
-    |> set "list" Core.list_
-    |> set "list?" Core.is_list
-    |> set "empty?" Core.is_empty
-    |> set "count" Core.count
-    |> set "=" Core.equal
-    |> set "<" Core.lt
-    |> set "<=" Core.lte
-    |> set ">" Core.gt
-    |> set ">=" Core.gte
