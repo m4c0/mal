@@ -18,6 +18,7 @@ end
 module TMap = Map.Make(HashKey)
 
 type t =
+  | Atom of t ref
   | Bool of bool
   | Hashmap of t TMap.t
   | Integer of int

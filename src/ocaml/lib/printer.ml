@@ -17,6 +17,7 @@ let pr_str readably t =
     in i @ [(pr kt) ^ " " ^ (pr d)]
   and pr = function
   | Types.Nil -> "nil"
+  | Types.Atom(a) -> Printf.sprintf "(atom %s)" (pr !a)
   | Types.Bool(b) -> string_of_bool b
   | Types.Integer(i) -> string_of_int i 
   | Types.Keyword(s) -> s

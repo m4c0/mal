@@ -32,6 +32,11 @@ let env =
     |> Env.set "println" Core.println
     |> Env.set "read-string" Core.read_string
     |> Env.set "slurp" Core.slurp
+    |> Env.set "atom" Core.atom
+    |> Env.set "atom?" Core.is_atom
+    |> Env.set "deref" Core.deref
+    |> Env.set "reset!" Core.reset
+    |> Env.set "swap!" Core.swap
     |> ref
 
 let eval args = 

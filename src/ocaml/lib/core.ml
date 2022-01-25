@@ -82,3 +82,30 @@ let slurp = Lambda (fun args ->
   | [String(f)] -> String(read_file f)
   | _ -> raise Invalid_args
 )
+
+let atom = Lambda (fun args ->
+  match args with
+  | [a] -> Atom(ref a)
+  | _ -> raise Invalid_args
+)
+let is_atom = Lambda (fun args ->
+  match args with
+  | [Atom(_)] -> Bool(true)
+  | _ -> Bool(false)
+)
+let deref = Lambda (fun args ->
+  match args with
+  | [Atom(x)] -> !x
+  | _ -> raise Invalid_args
+)
+let reset = Lambda (fun args ->
+  match args with
+  | [Atom(x); v] -> x := v; v
+  | _ -> raise Invalid_args
+)
+let swap = Lambda (fun args ->
+  match args with
+  | Atom(x) :: Lambda(fn) :: a -> x := (fn (!x :: a)); !x
+  | _ -> raise Invalid_args
+)
+
