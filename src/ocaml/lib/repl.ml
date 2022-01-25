@@ -34,8 +34,15 @@ let env =
     |> Env.set "slurp" Core.slurp
     |> ref
 
+let eval args = 
+  match args with
+  | [ast] -> Eval.eval env ast
+  | _ -> raise Core.Invalid_args
+
 let repl =
+  env := Env.set "eval" (Types.Lambda eval) !env;
   "(def! not (fn* (a) (if a false true)))" |> rep env |> ignore;
+  "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))" |> rep env |> ignore;
   try
     while true do
       print_string "user> ";
