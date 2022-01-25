@@ -1,6 +1,7 @@
 open Types
 
 exception Invalid_args
+exception Unreadable_file
 
 let two_int_fn fn =
   let l args =
@@ -66,5 +67,18 @@ let gte = cmp_fn (fun a b -> a >= b)
 let read_string = Lambda (fun args ->
   match args with
   | [String(a)] -> Reader.read_str a
+  | _ -> raise Invalid_args
+)
+let slurp = Lambda (fun args ->
+  let read_file f = 
+    try 
+      let ch = open_in_bin f in
+      let s = really_input_string ch (in_channel_length ch) in
+      close_in ch;
+      s
+    with _ -> raise Unreadable_file
+  in
+  match args with
+  | [String(f)] -> String(read_file f)
   | _ -> raise Invalid_args
 )

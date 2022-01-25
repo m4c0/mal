@@ -2,6 +2,7 @@ let rep env str =
   try str |> Reader.read_str |> Eval.eval env |> Printer.pr_str true
   with
   | Core.Invalid_args -> "Invalid arguments"
+  | Core.Unreadable_file -> "File not found or not accessible"
   | Eval.Invalid_callable -> "Tryed to call something that is not a function"
   | Eval.Invalid_form -> "Mismatched parameters in core call"
   | Eval.Mismatched_function_args -> "Mismatched parameters in function call"
@@ -30,6 +31,7 @@ let env =
     |> Env.set "prn" Core.prn
     |> Env.set "println" Core.println
     |> Env.set "read-string" Core.read_string
+    |> Env.set "slurp" Core.slurp
     |> ref
 
 let repl =
