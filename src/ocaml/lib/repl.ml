@@ -44,8 +44,11 @@ let eval args =
   | [ast] -> Eval.eval env ast
   | _ -> raise Core.Invalid_args
 
+let argv = Sys.argv |> Array.to_list |> List.tl |> List.map Types.of_string
+
 let repl =
   env := Env.set "eval" (Types.Lambda eval) !env;
+  env := Env.set "*ARGV*" (Types.List argv) !env;
   "(def! not (fn* (a) (if a false true)))" |> rep env |> ignore;
   "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))" |> rep env |> ignore;
   try
