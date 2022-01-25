@@ -21,7 +21,6 @@ let sub = two_int_fn (fun a b -> a - b)
 let mult = two_int_fn (fun a b -> a * b)
 let div = two_int_fn (fun a b -> a / b)
 
-let prn = Lambda (fun args -> args |> List.map Printer.pr_str |> ignore; Nil)
 let list_ = Lambda (fun args -> List(args))
 let is_list = Lambda (fun args ->
   match args with

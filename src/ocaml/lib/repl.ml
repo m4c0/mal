@@ -1,5 +1,5 @@
 let rep env str = 
-  try str |> Reader.read_str |> Eval.eval env |> Printer.pr_str
+  try str |> Reader.read_str |> Eval.eval env |> Printer.pr_str true
   with
   | Core.Invalid_args -> "Invalid arguments"
   | Eval.Invalid_callable -> "Tryed to call something that is not a function"
@@ -16,7 +16,6 @@ let env =
     |> Env.set "-" Core.sub
     |> Env.set "*" Core.mult
     |> Env.set "/" Core.div
-    |> Env.set "prn" Core.prn
     |> Env.set "list" Core.list_
     |> Env.set "list?" Core.is_list
     |> Env.set "empty?" Core.is_empty

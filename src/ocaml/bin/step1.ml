@@ -2,7 +2,7 @@ open Lib
 
 let read str = Reader.read_str str
 let eval t = t
-let print t = Printer.pr_str t
+let print t = Printer.pr_str true t
 
 let rep str : string = 
   try str |> read |> eval |> print
