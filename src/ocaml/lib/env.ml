@@ -21,13 +21,12 @@ let set key value env =
   let mapper = fun _ -> Some(value) in
   { outer = env.outer; map = Map.update key mapper env.map }
 
-let bind o binds exprs =
-  let be = 
-    try List.combine binds exprs
-    with Invalid_argument _ -> raise Invalid_binding
-  in
-  let set_pair env (k, v) = set k v env in
-  List.fold_left set_pair (extend o) be
+let rec bind o binds exprs =
+  match (binds, exprs) with
+  | ([], []) -> o 
+  | ("&"::b::[], e) -> set b (Types.List e) o
+  | (hb::tb, he::te) -> set hb he (bind o tb te) 
+  | (_, _) -> raise Invalid_binding
 
 let step2 =
   { outer = None; map = Map.empty }

@@ -38,7 +38,7 @@ let rec eval env ast =
     | List(Symbol("if") :: cond :: tr :: fl :: []) -> if_form cond tr fl
     | List(Symbol("if") :: _) -> raise Invalid_form
 
-    | List(Symbol("fn*") :: List(sign) :: body :: []) -> fn_form sign body
+    | List(Symbol("fn*") :: (List(sign) | Vector(sign)) :: body :: []) -> fn_form sign body
     | List(Symbol("fn*") :: _) -> raise Invalid_form
     | List(_) as x -> x |> eval_ast |> eval_list
     | x -> eval_ast x
@@ -51,7 +51,7 @@ let rec eval env ast =
     let ssign = sign |> List.map Types.string_of_symbol in
     Lambda(fun args -> fn_closure ssign args body)
   and fn_closure params args body =
-    let new_env = Env.bind env params args |> ref in
+    let new_env = Env.bind !env params args |> ref in
     eval new_env body
   and eval_list = function
     | List([]) -> List([])
