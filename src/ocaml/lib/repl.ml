@@ -5,6 +5,7 @@ let rep env str =
   | Eval.Invalid_callable -> "Tryed to call something that is not a function"
   | Eval.Invalid_form -> "Mismatched parameters in core call"
   | Eval.Mismatched_function_args -> "Mismatched parameters in function call"
+  | Env.Invalid_binding -> "Invalid binding"
   | Env.Unknown_symbol(s) -> s ^ " not found"
   | Tokeniser.Eof -> "EOF"
   | Types.Expecting_symbol -> "Expecting symbol"

@@ -1,5 +1,6 @@
 module Map = Map.Make(String)
 
+exception Invalid_binding
 exception Unknown_symbol of string
 
 type t = {
@@ -21,7 +22,10 @@ let set key value env =
   { outer = env.outer; map = Map.update key mapper env.map }
 
 let bind o binds exprs =
-  let be = List.combine binds exprs in
+  let be = 
+    try List.combine binds exprs
+    with Invalid_argument _ -> raise Invalid_binding
+  in
   let set_pair env (k, v) = set k v env in
   List.fold_left set_pair (extend o) be
 
