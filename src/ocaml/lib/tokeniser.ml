@@ -23,7 +23,6 @@ let rec take_string acc s =
   let open Seq in
   match s() with
   | Nil -> raise Eof
-  | Cons('\n', _) -> raise Eof
   | Cons('"', xs) -> (String(acc), xs)
   | Cons('\\', xs) -> (
       match xs() with

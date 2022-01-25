@@ -29,6 +29,7 @@ let env =
     |> Env.set "str" Core.str
     |> Env.set "prn" Core.prn
     |> Env.set "println" Core.println
+    |> Env.set "read-string" Core.read_string
     |> ref
 
 let repl =

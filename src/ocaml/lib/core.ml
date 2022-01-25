@@ -62,3 +62,9 @@ let lt = cmp_fn (fun a b -> a < b)
 let lte = cmp_fn (fun a b -> a <= b)
 let gt = cmp_fn (fun a b -> a > b)
 let gte = cmp_fn (fun a b -> a >= b)
+
+let read_string = Lambda (fun args ->
+  match args with
+  | [String(a)] -> Reader.read_str a
+  | _ -> raise Invalid_args
+)
