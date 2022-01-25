@@ -61,7 +61,7 @@ let rec eval env ast =
     eval new_env body
   and quasiquote_list elt rest =
     match elt with
-    | List([Symbol("splice-unquote"); x]) -> List(Symbol("concat") :: x :: rest)
+    | List([Symbol("splice-unquote"); x]) -> List(Symbol("concat") :: x :: [(quasiquote (List rest))])
     | _ -> List(Symbol("cons") :: (quasiquote elt) :: [(quasiquote (List rest))])
   and quasiquote = function
     | List([Symbol("unquote"); x]) -> x
