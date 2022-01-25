@@ -34,3 +34,5 @@ let string_of_symbol tt =
   match tt with
   | Symbol(s) -> s
   | _ -> raise Expecting_symbol
+
+let of_string x = String x

@@ -24,10 +24,14 @@ let rec take_string acc s =
   match s() with
   | Nil -> raise Eof
   | Cons('\n', _) -> raise Eof
-  | Cons('"', xs) -> (String(acc ^ "\""), xs)
+  | Cons('"', xs) -> (String(acc), xs)
   | Cons('\\', xs) -> (
       match xs() with
       | Nil -> raise Eof
+      | Cons('"', xx) -> take_string (acc ^ "\"") xx
+      | Cons('\\', xx) -> take_string (acc ^ "\\") xx
+      | Cons('r', xx) -> take_string (acc ^ "\r") xx
+      | Cons('n', xx) -> take_string (acc ^ "\n") xx
       | Cons(x, xx) -> take_string (acc ^ "\\" ^ (String.make 1 x)) xx
   )
   | Cons(x, xs) -> take_string (acc ^ (String.make 1 x)) xs
@@ -57,7 +61,7 @@ let token_fn s =
   | Nil -> None
   | Cons(';', xs) -> Some(take_comment xs)
   | Cons('~', xs) -> Some(take_unquote xs)
-  | Cons('"', xs) -> Some(take_string "\"" xs)
+  | Cons('"', xs) -> Some(take_string "" xs)
   | Cons(':', xs) -> Some(take_keyword xs)
   | Cons((' ' | ',' | '\t' | '\r' | '\n'), xs) -> Some(take_spaces xs)
   | Cons(('[' | ']' | '{' | '}' | '(' | ')' | '\'' | '`' | '^' | '@') as x, xs)

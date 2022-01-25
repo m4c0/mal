@@ -25,6 +25,10 @@ let env =
     |> Env.set "<=" Core.lte
     |> Env.set ">" Core.gt
     |> Env.set ">=" Core.gte
+    |> Env.set "pr-str" Core.pr_str
+    |> Env.set "str" Core.str
+    |> Env.set "prn" Core.prn
+    |> Env.set "println" Core.println
     |> ref
 
 let repl =
@@ -32,7 +36,6 @@ let repl =
   try
     while true do
       print_string "user> ";
-    read_line () |> rep env |> print_string;
-    print_newline ();
+    read_line () |> rep env |> print_endline
     done;
   with End_of_file -> ()
