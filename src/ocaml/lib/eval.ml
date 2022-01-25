@@ -40,6 +40,9 @@ let rec eval env ast =
 
     | List(Symbol("fn*") :: (List(sign) | Vector(sign)) :: body :: []) -> fn_form sign body
     | List(Symbol("fn*") :: _) -> raise Invalid_form
+
+    | List(Symbol("quote") :: x :: []) -> x
+
     | List(_) as x -> x |> eval_ast |> eval_list
     | x -> eval_ast x
   and if_form cond tr fl =

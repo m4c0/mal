@@ -109,3 +109,11 @@ let swap = Lambda (fun args ->
   | _ -> raise Invalid_args
 )
 
+let cons = Lambda (fun args ->
+  match args with
+  | [x; List(l)] -> List(x :: l)
+  | _ -> raise Invalid_args
+)
+let concat = Lambda (fun args ->
+  args |> List.map Types.list_of_list |> List.concat |> Types.of_list
+)

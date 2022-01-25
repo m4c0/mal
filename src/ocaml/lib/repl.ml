@@ -37,6 +37,8 @@ let env =
     |> Env.set "deref" Core.deref
     |> Env.set "reset!" Core.reset
     |> Env.set "swap!" Core.swap
+    |> Env.set "cons" Core.cons
+    |> Env.set "concat" Core.concat
     |> ref
 
 let eval args = 

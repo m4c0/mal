@@ -36,4 +36,11 @@ let string_of_symbol tt =
   | Symbol(s) -> s
   | _ -> raise Expecting_symbol
 
+let list_of_list tt =
+  match tt with
+  | List(s) -> s
+  | _ -> raise Expecting_symbol
+
+let of_list x = List x
 let of_string x = String x
+
