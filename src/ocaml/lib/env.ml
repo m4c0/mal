@@ -20,6 +20,11 @@ let set key value env =
   let mapper = fun _ -> Some(value) in
   { outer = env.outer; map = Map.update key mapper env.map }
 
+let bind o binds exprs =
+  let be = List.combine binds exprs in
+  let set_pair env (k, v) = set k v env in
+  List.fold_left set_pair (extend o) be
+
 let step2 =
   { outer = None; map = Map.empty }
     |> set "+" Core.sum

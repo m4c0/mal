@@ -28,3 +28,9 @@ type t =
   | String of string
   | Symbol of string
   | Vector of t list
+
+exception Expecting_symbol
+let string_of_symbol tt =
+  match tt with
+  | Symbol(s) -> s
+  | _ -> raise Expecting_symbol
