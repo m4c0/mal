@@ -35,6 +35,8 @@ let env =
     |> Env.set "first" Core.first
     |> Env.set "rest" Core.rest
     |> Env.set "throw" Core.throw
+    |> Env.set "apply" Core.apply
+    |> Env.set "map" Core.map
     |> ref
 
 let eval args = 

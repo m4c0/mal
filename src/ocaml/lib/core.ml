@@ -141,3 +141,18 @@ let throw = Lambda (function
   | [x] -> raise (Types.Application_exception x)
   | _ -> raise Invalid_args
 )
+
+let apply = Lambda (fun args ->
+  let rec merge_args = function
+    | [List(l) | Vector(l)] -> l
+    | x :: xs -> x :: merge_args xs
+    | _ -> raise Invalid_args
+  in
+  match args with
+  | Lambda(fn) :: xs -> xs |> merge_args |> fn 
+  | _ -> raise Invalid_args
+)
+let map = Lambda (function
+  | [Lambda(fn); (List(l) | Vector(l))] -> List(List.map (fun ls -> fn [ls]) l)
+  | _ -> raise Invalid_args
+)
