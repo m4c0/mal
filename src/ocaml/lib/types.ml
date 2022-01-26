@@ -25,6 +25,7 @@ type t =
   | Keyword of string
   | Lambda of (t list -> t)
   | List of t list
+  | Macro of (t list -> t)
   | Nil
   | String of string
   | Symbol of string
@@ -44,4 +45,3 @@ let list_of_iter tt =
 
 let of_list x = List x
 let of_string x = String x
-

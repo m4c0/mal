@@ -24,6 +24,7 @@ let pr_str readably t =
   | Types.String(s) -> if readably then quote s else s
   | Types.Symbol(s) -> s 
   | Types.Lambda(_) -> "#<function>"
+  | Types.Macro(_) -> "#<macro>"
   | Types.List(l) ->
       let ls = List.map pr l in
       "(" ^ (String.concat " " ls) ^ ")" 

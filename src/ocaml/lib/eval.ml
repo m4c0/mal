@@ -10,11 +10,24 @@ let rec eval env ast =
     | Vector(v) -> Vector(List.map eval_form v)
     | Hashmap(m) -> Hashmap(TMap.map eval_form m)
     | x -> x
-  and eval_form = function
+  and eval_form form = 
+    match macroexpand form with
     | List(Symbol("def!") :: Symbol(key) :: v :: []) ->
         let value = eval_form v in
         env := Env.set key value !env; value
     | List(Symbol("def!") :: _) -> raise Invalid_form
+
+    | List(Symbol("defmacro!") :: Symbol(key) :: v :: []) ->
+        begin
+          match eval_form v with
+          | Lambda(x) -> 
+              let m = Macro x in
+              env := Env.set key m !env; m
+          | _ -> raise Invalid_form
+        end
+    | List(Symbol("defmacro!") :: _) -> raise Invalid_form
+
+    | List(Symbol("macroexpand") :: ast :: []) -> macroexpand ast
 
     | List(Symbol("let*") :: (List(l) | Vector(l)) :: form :: []) ->
         let new_env = env |> Env.extend |> ref in
@@ -59,6 +72,15 @@ let rec eval env ast =
   and fn_closure params args body =
     let new_env = Env.bind !env params args |> ref in
     eval new_env body
+  and macroexpand ast =
+    match ast with
+    | List(Symbol(s) :: xs) ->
+        begin
+          match Env.find_opt !env s with
+          | Some(Macro(fn)) -> macroexpand (fn xs)
+          | _ -> ast
+        end
+    | _ -> ast
   and quasiquote_list elt rest =
     match elt with
     | List([Symbol("splice-unquote"); x]) -> List(Symbol("concat") :: x :: [(quasiquote (List rest))])

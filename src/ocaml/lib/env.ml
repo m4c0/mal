@@ -18,6 +18,13 @@ let rec find env key =
     | None -> raise (Unknown_symbol key)
     | Some(e) -> find !e key
 
+let rec find_opt env key = 
+  try Some(Map.find key env.map)
+  with Not_found ->
+    match env.outer with
+    | None -> None
+    | Some(e) -> find_opt !e key
+
 let set key value env =
   let mapper = fun _ -> Some(value) in
   { outer = env.outer; map = Map.update key mapper env.map }
