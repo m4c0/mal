@@ -110,9 +110,28 @@ let concat = Lambda (fun args ->
   args |> List.map Types.list_of_iter |> List.concat |> Types.of_list
 )
 
-let vec = Lambda (fun args ->
-  match args with
+let vec = Lambda (function
   | [List(x)] -> Vector(x)
   | [Vector(_) as x] -> x
+  | _ -> raise Invalid_args
+)
+
+let nth = Lambda (function
+  | [(List(l) | Vector(l)); Integer(i)] -> (
+      try List.nth l i
+      with _ -> raise Invalid_args
+  )
+  | _ -> raise Invalid_args
+)
+let first = Lambda (function
+  | [(List([]) | Vector([]))] -> Nil 
+  | [(List(x :: _) | Vector(x :: _))] -> x
+  | [Nil] -> Nil
+  | _ -> raise Invalid_args
+)
+let rest = Lambda (function
+  | [(List([]) | Vector([]))] -> List([])
+  | [(List(_ :: xs) | Vector(_ :: xs))] -> List(xs)
+  | [Nil] -> List([])
   | _ -> raise Invalid_args
 )

@@ -40,6 +40,9 @@ let env =
     |> Env.set "cons" Core.cons
     |> Env.set "concat" Core.concat
     |> Env.set "vec" Core.vec
+    |> Env.set "nth" Core.nth
+    |> Env.set "first" Core.first
+    |> Env.set "rest" Core.rest
     |> ref
 
 let eval args = 
@@ -54,6 +57,7 @@ let repl =
   env := Env.set "*ARGV*" (Types.List argv) !env;
   "(def! not (fn* (a) (if a false true)))" |> rep env |> ignore;
   "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))" |> rep env |> ignore;
+  "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))" |> rep env |> ignore;
   try
     while true do
       print_string "user> ";
