@@ -27,19 +27,16 @@ let str = Lambda (fun args -> args |> List.map Printer.pr_str_nr |> String.conca
 let prn = Lambda (fun args -> args |> List.map Printer.pr_str_r |> String.concat " " |> print_endline; Nil)
 let println = Lambda (fun args -> args |> List.map Printer.pr_str_nr |> String.concat " " |> print_endline; Nil)
 let list_ = Lambda (fun args -> List(args))
-let is_list = Lambda (fun args ->
-  match args with
+let is_list = Lambda (function
   | [List(_)] -> Bool(true)
   | _ -> Bool(false)
 )
-let is_empty = Lambda (fun args ->
-  match args with
+let is_empty = Lambda (function
   | [List([])] -> Bool(true)
   | [Vector([])] -> Bool(true)
   | _ -> Bool(false)
 )
-let count = Lambda (fun args ->
-  match args with
+let count = Lambda (function
   | [List(l)] -> Integer(List.length l)
   | [Vector(l)] -> Integer(List.length l)
   | _ -> Integer(0)
@@ -64,8 +61,7 @@ let lte = cmp_fn (fun a b -> a <= b)
 let gt = cmp_fn (fun a b -> a > b)
 let gte = cmp_fn (fun a b -> a >= b)
 
-let read_string = Lambda (fun args ->
-  match args with
+let read_string = Lambda (function
   | [String(a)] -> Reader.read_str a
   | _ -> raise Invalid_args
 )
@@ -83,8 +79,7 @@ let slurp = Lambda (fun args ->
   | _ -> raise Invalid_args
 )
 
-let atom = Lambda (fun args ->
-  match args with
+let atom = Lambda (function
   | [a] -> Atom(ref a)
   | _ -> raise Invalid_args
 )
@@ -93,24 +88,20 @@ let is_atom = Lambda (fun args ->
   | [Atom(_)] -> Bool(true)
   | _ -> Bool(false)
 )
-let deref = Lambda (fun args ->
-  match args with
+let deref = Lambda (function
   | [Atom(x)] -> !x
   | _ -> raise Invalid_args
 )
-let reset = Lambda (fun args ->
-  match args with
+let reset = Lambda (function
   | [Atom(x); v] -> x := v; v
   | _ -> raise Invalid_args
 )
-let swap = Lambda (fun args ->
-  match args with
+let swap = Lambda (function
   | Atom(x) :: Lambda(fn) :: a -> x := (fn (!x :: a)); !x
   | _ -> raise Invalid_args
 )
 
-let cons = Lambda (fun args ->
-  match args with
+let cons = Lambda (function
   | [x; List(l)] -> List(x :: l)
   | [x; Vector(l)] -> List(x :: l)
   | _ -> raise Invalid_args
