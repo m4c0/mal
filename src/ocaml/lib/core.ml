@@ -179,8 +179,47 @@ let keyword = Lambda(function
 )
 
 let hashmap = Lambda(fun args -> Hashmap(Types.assoc TMap.empty args))
-
 let assoc = Lambda(function
   | Hashmap(m) :: xs -> Hashmap(Types.assoc m xs)
+  | _ -> raise Invalid_args
+)
+let dissoc = Lambda(function
+  | Hashmap(m) :: xs -> 
+      let rec fn m = function
+        | [] -> m
+        | Keyword(x) :: xx -> fn (TMap.remove (Keyword x) m) xx
+        | String(x) :: xx -> fn (TMap.remove (String x) m) xx
+        | _ :: xx -> fn m xx
+      in Hashmap(fn m xs)
+  | _ -> raise Invalid_args
+)
+
+let map_find_opt = function
+  | [Hashmap(m); String(s)] -> TMap.find_opt (String s) m
+  | [Hashmap(m); Keyword(s)] -> TMap.find_opt (Keyword s) m
+  | [Nil; _] -> None
+  | _ -> raise Invalid_args
+
+let get = Lambda(fun args ->
+  match map_find_opt args with
+  | None -> Nil
+  | Some(x) -> x
+)
+let contains = Lambda(fun args ->
+  match map_find_opt args with
+  | None -> Bool(false)
+  | Some(_) -> Bool(true)
+)
+
+let keys = Lambda(function
+  | [Hashmap(x)] ->
+      let f (k, _) = match k with
+      | HashKey.Keyword(k) -> Types.Keyword(k)
+      | HashKey.String(s) -> Types.String(s)
+      in TMap.bindings x |> List.map f |> Types.of_list
+  | _ -> raise Invalid_args
+)
+let vals = Lambda(function
+  | [Hashmap(x)] -> let f (_, v) = v in TMap.bindings x |> List.map f |> Types.of_list
   | _ -> raise Invalid_args
 )

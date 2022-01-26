@@ -50,6 +50,11 @@ let env =
     |> Env.set "map?" Core.is_map
     |> Env.set "hash-map" Core.hashmap
     |> Env.set "assoc" Core.assoc
+    |> Env.set "dissoc" Core.dissoc
+    |> Env.set "get" Core.get
+    |> Env.set "contains?" Core.contains
+    |> Env.set "keys" Core.keys
+    |> Env.set "vals" Core.vals
     |> ref
 
 let eval args = 
