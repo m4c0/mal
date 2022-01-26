@@ -37,6 +37,17 @@ let env =
     |> Env.set "throw" Core.throw
     |> Env.set "apply" Core.apply
     |> Env.set "map" Core.map
+    |> Env.set "nil?" Core.is_nil
+    |> Env.set "true?" Core.is_true
+    |> Env.set "false?" Core.is_false
+    |> Env.set "symbol?" Core.is_symbol
+    |> Env.set "symbol" Core.symbol
+    |> Env.set "keyword" Core.keyword
+    |> Env.set "keyword?" Core.is_keyword
+    |> Env.set "vector" Core.vector
+    |> Env.set "vector?" Core.is_vector
+    |> Env.set "sequential?" Core.is_sequential
+    |> Env.set "map?" Core.is_map
     |> ref
 
 let eval args = 

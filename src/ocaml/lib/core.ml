@@ -156,3 +156,24 @@ let map = Lambda (function
   | [Lambda(fn); (List(l) | Vector(l))] -> List(List.map (fun ls -> fn [ls]) l)
   | _ -> raise Invalid_args
 )
+
+let is_nil = Lambda (function [Nil] -> Bool(true) | _ -> Bool(false))
+let is_true = Lambda (function [Bool(true)] -> Bool(true) | _ -> Bool(false))
+let is_false = Lambda (function [Bool(false)] -> Bool(true) | _ -> Bool(false))
+let is_symbol = Lambda (function [Symbol(_)] -> Bool(true) | _ -> Bool(false))
+let is_keyword = Lambda (function [Keyword(_)] -> Bool(true) | _ -> Bool(false))
+let is_vector = Lambda (function [Vector(_)] -> Bool(true) | _ -> Bool(false))
+let is_map = Lambda (function [Hashmap(_)] -> Bool(true) | _ -> Bool(false))
+
+let is_sequential = Lambda (function
+  | [List(_)] -> Bool(true)
+  | [Vector(_)] -> Bool(true)
+  | _ -> Bool(false))
+
+let vector = Lambda (fun args -> Vector(args))
+let symbol = Lambda(function [String(x)] -> Symbol(x) | _ -> raise Invalid_args)
+let keyword = Lambda(function
+  | [String(x)] -> Keyword(x) 
+  | [Keyword(_) as x] -> x
+  | _ -> raise Invalid_args
+)
