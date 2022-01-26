@@ -177,3 +177,10 @@ let keyword = Lambda(function
   | [Keyword(_) as x] -> x
   | _ -> raise Invalid_args
 )
+
+let hashmap = Lambda(fun args -> Hashmap(Types.assoc TMap.empty args))
+
+let assoc = Lambda(function
+  | Hashmap(m) :: xs -> Hashmap(Types.assoc m xs)
+  | _ -> raise Invalid_args
+)

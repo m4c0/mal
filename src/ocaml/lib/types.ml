@@ -47,3 +47,11 @@ let list_of_iter tt =
 
 let of_list x = List x
 let of_string x = String x
+
+exception Unbalanced_hashmap
+let rec assoc map = function
+  | [] -> map
+  | String(k) :: v :: xs -> TMap.add (HashKey.String k) v (assoc map xs)
+  | Keyword(k) :: v :: xs -> TMap.add (HashKey.Keyword k) v (assoc map xs)
+  | _ -> raise Unbalanced_hashmap 
+

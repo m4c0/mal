@@ -48,6 +48,8 @@ let env =
     |> Env.set "vector?" Core.is_vector
     |> Env.set "sequential?" Core.is_sequential
     |> Env.set "map?" Core.is_map
+    |> Env.set "hash-map" Core.hashmap
+    |> Env.set "assoc" Core.assoc
     |> ref
 
 let eval args = 

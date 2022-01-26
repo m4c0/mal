@@ -12,8 +12,9 @@ let to_string = function
   | Env.Invalid_binding -> "Invalid binding"
   | Env.Unknown_symbol(s) -> Printf.sprintf "'%s' not found" s
   | Tokeniser.Eof -> "EOF"
-  | Types.Expecting_symbol -> "Expecting symbol"
   | Types.Application_exception(t) -> "Error: " ^ (Printer.pr_str_r t)
+  | Types.Unbalanced_hashmap -> "Unbalanced hashmap spec"
+  | Types.Expecting_symbol -> "Expecting symbol"
   | _ -> "Generic exception"
 
 let invalid_form () = raise Invalid_form
