@@ -50,7 +50,7 @@ let take_unquote s =
   | _ -> (Symbol("~"), s)
 
 let take_keyword s =
-  match take_symbol ":" s with
+  match take_symbol "" s with
   | (Symbol(s), xs) -> (Keyword(s), xs)
   | x -> x
 

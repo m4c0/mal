@@ -20,7 +20,7 @@ let pr_str readably t =
   | Types.Atom(a) -> Printf.sprintf "(atom %s)" (pr !a)
   | Types.Bool(b) -> string_of_bool b
   | Types.Integer(i) -> string_of_int i 
-  | Types.Keyword(s) -> s
+  | Types.Keyword(s) -> ":" ^ s
   | Types.String(s) -> if readably then quote s else s
   | Types.Symbol(s) -> s 
   | Types.Lambda(_) -> "#<function>"
