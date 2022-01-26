@@ -31,6 +31,8 @@ type t =
   | Symbol of string
   | Vector of t list
 
+exception Application_exception of t
+
 exception Expecting_symbol
 let string_of_symbol tt =
   match tt with

@@ -1,15 +1,6 @@
 let rep env str = 
   try str |> Reader.read_str |> Eval.eval env |> Printer.pr_str true
-  with
-  | Core.Invalid_args -> "Invalid arguments"
-  | Core.Unreadable_file -> "File not found or not accessible"
-  | Eval.Invalid_callable -> "Tryed to call something that is not a function"
-  | Eval.Invalid_form -> "Mismatched parameters in core call"
-  | Eval.Mismatched_function_args -> "Mismatched parameters in function call"
-  | Env.Invalid_binding -> "Invalid binding"
-  | Env.Unknown_symbol(s) -> s ^ " not found"
-  | Tokeniser.Eof -> "EOF"
-  | Types.Expecting_symbol -> "Expecting symbol"
+  with e -> Exc.to_string e
 
 let env = 
   Env.empty
@@ -43,6 +34,7 @@ let env =
     |> Env.set "nth" Core.nth
     |> Env.set "first" Core.first
     |> Env.set "rest" Core.rest
+    |> Env.set "throw" Core.throw
     |> ref
 
 let eval args = 

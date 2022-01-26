@@ -1,6 +1,7 @@
 open Types
 
 exception Invalid_args
+exception Out_of_bounds
 exception Unreadable_file
 
 let two_int_fn fn =
@@ -119,7 +120,7 @@ let vec = Lambda (function
 let nth = Lambda (function
   | [(List(l) | Vector(l)); Integer(i)] -> (
       try List.nth l i
-      with _ -> raise Invalid_args
+      with _ -> raise Out_of_bounds
   )
   | _ -> raise Invalid_args
 )
@@ -133,5 +134,10 @@ let rest = Lambda (function
   | [(List([]) | Vector([]))] -> List([])
   | [(List(_ :: xs) | Vector(_ :: xs))] -> List(xs)
   | [Nil] -> List([])
+  | _ -> raise Invalid_args
+)
+
+let throw = Lambda (function
+  | [x] -> raise (Types.Application_exception x)
   | _ -> raise Invalid_args
 )
