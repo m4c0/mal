@@ -48,7 +48,15 @@ let equal = Lambda (fun args ->
     match args with
     | List(a) :: Vector(b) :: _ -> deep_equals a b
     | Vector(a) :: List(b) :: _ -> deep_equals a b
+    | Hashmap(a) :: Hashmap(b) :: _ ->
+        pairs_equals (TMap.bindings a) (TMap.bindings b)
     | a :: b :: _ -> a = b
+    | _ -> false
+  and pairs_equals l1 l2 =
+    match (l1, l2) with
+    | [], [] -> true
+    | (k1, v1) :: x1, (k2, v2) :: x2 ->
+        (k1 = k2) && (shallow_equals [v1; v2]) && (pairs_equals x1 x2)
     | _ -> false
   and rec_not_equals (a, b) = shallow_equals [a; b] |> not
   and deep_equals a b =
