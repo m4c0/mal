@@ -1,75 +1,78 @@
-let rec eval env ast =
-  let open Types in
-  let rec eval_ast = function
+open Types
+
+let macro sym args = of_list (Symbol(sym) :: args)
+
+let rec macroexpand env ast = 
+  let extract_macro args = function
+    | Some(Macro(fn)) -> args |> fn |> macroexpand env
+    | _ -> ast
+  in
+  match ast with
+  | Iterable(List, Symbol(s) :: xs) -> Env.find_opt !env s |> extract_macro xs
+  | _ -> ast
+
+let rec quasiquote = function
+    | Iterable(List, [Symbol("unquote"); x]) -> x
+    | Iterable(List, l) -> quasiquote_rec l
+    | Iterable(Vector, l) -> macro "vec" [quasiquote_rec l]
+    | (Hashmap(_) | Symbol(_)) as x -> macro "quote" [x]
+    | ast -> ast
+  and quasiquote_rec = function
+    | [] -> Types.empty_list
+    | Iterable(List, [Symbol("splice-unquote"); e2]) :: rest -> macro "concat" [e2; quasiquote_rec rest]
+    | elt :: rest -> macro "cons" [quasiquote elt; quasiquote_rec rest]
+
+let def_form env key value = env := Env.set key value !env; value
+let defmacro_form env key = function
+  | Lambda(x) -> def_form env key (Macro x)
+  | _ -> Exc.invalid_form ()
+
+let rec eval env (ast : Types.t) =
+  let rec eval_form form =
+    match macroexpand env form with
+    | Iterable(List, []) as ast -> ast
+    | Iterable(List, l) -> eval_list l
+    | ast -> eval_ast ast
+  and eval_list = function
+    | [Symbol("def!"); Symbol(key); v] -> def_form env key (eval_form v)
+    | [Symbol("defmacro!"); Symbol(key); v] -> defmacro_form env key (eval_form v)
+    | [Symbol("macroexpand"); ast] -> macroexpand env ast
+    | [Symbol("let*"); Iterable(_, l); form] -> let_form l form
+    | Symbol("do") :: l -> l |> List.map eval_form |> List.rev |> List.hd
+    | [Symbol("if"); cond; tr] -> if_form cond tr Nil
+    | [Symbol("if"); cond; tr; fl] -> if_form cond tr fl
+    | [Symbol("fn*"); Iterable(_, sign); body] -> fn_form sign body
+    | [Symbol("quote"); x] -> x
+    | [Symbol("quasiquoteexpand"); x] -> quasiquote x
+    | [Symbol("quasiquote"); x] -> x |> quasiquote |> eval_form
+    | [Symbol("try*"); a] -> eval_form a 
+    | [Symbol("try*"); a; Iterable(List, [Symbol("catch*"); Symbol(b); c])] -> try_form a b c
+
+    | Symbol("catch*" | "def!" | "defmacro!" | "fn*" | "if" | "let*" | "macroexpand" | "quasiquote" | "quasiquoteexpand" | "try*") :: _ -> Exc.invalid_form ()
+
+    | x ->
+       match x |> List.map eval_form with
+      | Lambda(fn) :: args -> fn args
+      | _ -> Exc.invalid_callable ()
+  and eval_ast = function
+    | Iterable(_, []) as x -> x
+    | Iterable(Vector, x) -> x |> List.map eval_form |> Types.of_vector
+    | Iterable(List, x) -> x |> List.map eval_form |> Types.of_list
     | Symbol(x) -> Env.find !env x
-    | List(l) -> List(List.map eval_form l)
-    | Vector(v) -> Vector(List.map eval_form v)
     | Hashmap(m) -> Hashmap(TMap.map eval_form m)
     | x -> x
-  and eval_form form = 
-    match macroexpand form with
-    | List(Symbol("def!") :: Symbol(key) :: v :: []) ->
-        let value = eval_form v in
-        env := Env.set key value !env; value
-    | List(Symbol("def!") :: _) -> Exc.invalid_form ()
-
-    | List(Symbol("defmacro!") :: Symbol(key) :: v :: []) ->
-        begin
-          match eval_form v with
-          | Lambda(x) -> 
-              let m = Macro x in
-              env := Env.set key m !env; m
-          | _ -> Exc.invalid_form ()
-        end
-    | List(Symbol("defmacro!") :: _) -> Exc.invalid_form ()
-
-    | List(Symbol("macroexpand") :: ast :: []) -> macroexpand ast
-
-    | List(Symbol("let*") :: (List(l) | Vector(l)) :: form :: []) ->
-        let new_env = env |> Env.extend |> ref in
-        let rec binder ll = begin
-          match ll with
+  and let_form l form =
+    let new_env = env |> Env.extend |> ref in
+    let rec binder ll = begin
+      match ll with
           | [] -> eval new_env form
           | Symbol(k) :: v :: xs -> 
               let vv = eval new_env v in
               new_env := Env.set k vv !new_env;
               binder xs
           | _ -> Exc.invalid_form ()
-        end in
-        binder l
-    | List(Symbol("let*") :: _) -> Exc.invalid_form ()
-
-    | List(Symbol("do") :: []) -> Exc.invalid_form ()
-    | List(Symbol("do") :: l) -> 
-        l |> List.map eval_form |> List.rev |> List.hd
-
-    | List(Symbol("if") :: cond :: tr :: []) -> if_form cond tr Nil
-    | List(Symbol("if") :: cond :: tr :: fl :: []) -> if_form cond tr fl
-    | List(Symbol("if") :: _) -> Exc.invalid_form ()
-
-    | List(Symbol("fn*") :: (List(sign) | Vector(sign)) :: body :: []) -> fn_form sign body
-    | List(Symbol("fn*") :: _) -> Exc.invalid_form ()
-
-    | List(Symbol("quote") :: x :: []) -> x
-
-    | List(Symbol("quasiquoteexpand") :: x :: []) -> quasiquote x
-    | List(Symbol("quasiquote") :: x :: []) -> x |> quasiquote |> eval_form
-
-    | List([Symbol("try*"); a; List([Symbol("catch*"); Symbol(b); c])]) -> (
-        try eval_form a
-        with e ->
-          let exc =
-            match e with
-            | Application_exception e -> e
-            | e -> e |> Exc.to_string |> Types.of_string
-          in fn_closure [b] [exc] c
-    )
-    | List([Symbol("try*"); a]) -> eval_form a 
-    | List(Symbol("try*") :: _) -> Exc.invalid_form ()
-    | List(Symbol("catch*") :: _) -> Exc.invalid_form ()
-
-    | List(_) as x -> x |> eval_ast |> eval_list
-    | x -> eval_ast x
+    end in
+    binder l
   and if_form cond tr fl =
     match eval_form cond with
     | Nil
@@ -81,29 +84,12 @@ let rec eval env ast =
   and fn_closure params args body =
     let new_env = Env.bind !env params args |> ref in
     eval new_env body
-  and macroexpand ast =
-    match ast with
-    | List(Symbol(s) :: xs) ->
-        begin
-          match Env.find_opt !env s with
-          | Some(Macro(fn)) -> macroexpand (fn xs)
-          | _ -> ast
-        end
-    | _ -> ast
-  and quasiquote_list elt rest =
-    match elt with
-    | List([Symbol("splice-unquote"); x]) -> List(Symbol("concat") :: x :: [(quasiquote (List rest))])
-    | _ -> List(Symbol("cons") :: (quasiquote elt) :: [(quasiquote (List rest))])
-  and quasiquote = function
-    | List([Symbol("unquote"); x]) -> x
-    | List([]) -> List([])
-    | Vector([]) -> List([Symbol("vec"); List([])])
-    | Vector(elt :: rest) -> List([Symbol("vec"); quasiquote_list elt rest])
-    | List(elt :: rest) -> quasiquote_list elt rest
-    | (Hashmap(_) | Symbol(_)) as x -> List([Symbol("quote"); x]) 
-    | x -> x
-  and eval_list = function
-    | List([]) -> List([])
-    | List(Lambda(fn) :: args) -> fn args
-    | _ -> Exc.invalid_callable ()
+  and try_form a b c =
+    try eval_form a
+    with e ->
+      let exc =
+        match e with
+        | Application_exception e -> e
+        | e -> e |> Exc.to_string |> Types.of_string
+    in fn_closure [b] [exc] c
   in eval_form ast

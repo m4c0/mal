@@ -20,14 +20,14 @@ let read_str str =
     match ts() with
     | Nil -> raise Tokeniser.Eof
     | Cons(Blank, xs) -> read_list acc xs
-    | Cons(Symbol(")"), xs) -> (Types.List(acc), xs)
+    | Cons(Symbol(")"), xs) -> (Types.of_list acc, xs)
     | Cons(_, _) ->
         match read_form ts with (form, xs) -> read_list (acc @ [form]) xs
   and read_vector acc ts =
     match ts() with
     | Nil -> raise Tokeniser.Eof
     | Cons(Blank, xs) -> read_vector acc xs
-    | Cons(Symbol("]"), xs) -> (Types.Vector(acc), xs)
+    | Cons(Symbol("]"), xs) -> (Types.of_vector acc, xs)
     | Cons(_, _) ->
         match read_form ts with (form, xs) -> read_vector (acc @ [form]) xs
   and read_hashmap acc ts =
@@ -48,13 +48,13 @@ let read_str str =
   and read_macro sym ts =
     let tsym = Types.Symbol sym in
     let (form, xs) = read_form ts in
-    let tlst = Types.List [tsym; form] in
+    let tlst = Types.of_list [tsym; form] in
     (tlst, xs)
   and read_withmeta ts =
     let (meta, ms) = read_form ts in
     let (data, ds) = read_form ms in
     let tsym = Types.Symbol "with-meta" in
-    let tlst = Types.List [tsym; data; meta] in
+    let tlst = Types.of_list [tsym; data; meta] in
     (tlst, ds)
   and read_form ts =
     match ts() with

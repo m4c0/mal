@@ -32,7 +32,7 @@ let set key value env =
 let rec bind o binds exprs =
   match (binds, exprs) with
   | ([], []) -> o 
-  | ("&"::b::[], e) -> set b (Types.List e) o
+  | ("&"::b::[], e) -> set b (Types.of_list e) o
   | (hb::tb, he::te) -> set hb he (bind o tb te) 
   | (_, _) -> raise Invalid_binding
 

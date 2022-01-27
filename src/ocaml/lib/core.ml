@@ -27,27 +27,24 @@ let pr_str = Lambda (fun args -> args |> List.map Printer.pr_str_r |> String.con
 let str = Lambda (fun args -> args |> List.map Printer.pr_str_nr |> String.concat "" |> Types.of_string)
 let prn = Lambda (fun args -> args |> List.map Printer.pr_str_r |> String.concat " " |> print_endline; Nil)
 let println = Lambda (fun args -> args |> List.map Printer.pr_str_nr |> String.concat " " |> print_endline; Nil)
-let list_ = Lambda (fun args -> List(args))
+let list_ = Lambda (fun args -> of_list args)
 let is_list = Lambda (function
-  | [List(_)] -> Bool(true)
+  | [Iterable(List, _)] -> Bool(true)
   | _ -> Bool(false)
 )
 let is_empty = Lambda (function
-  | [List([])] -> Bool(true)
-  | [Vector([])] -> Bool(true)
+  | [Iterable(_, [])] -> Bool(true)
   | _ -> Bool(false)
 )
 let count = Lambda (function
-  | [List(l)] -> Integer(List.length l)
-  | [Vector(l)] -> Integer(List.length l)
+  | [Iterable(_, l)] -> Integer(List.length l)
   | _ -> Integer(0)
 )
 
 let equal = Lambda (fun args ->
   let rec shallow_equals args =
     match args with
-    | List(a) :: Vector(b) :: _ -> deep_equals a b
-    | Vector(a) :: List(b) :: _ -> deep_equals a b
+    | Iterable(_, a) :: Iterable(_, b) :: _ -> deep_equals a b
     | Hashmap(a) :: Hashmap(b) :: _ ->
         pairs_equals (TMap.bindings a) (TMap.bindings b)
     | a :: b :: _ -> a = b
@@ -111,8 +108,7 @@ let swap = Lambda (function
 )
 
 let cons = Lambda (function
-  | [x; List(l)] -> List(x :: l)
-  | [x; Vector(l)] -> List(x :: l)
+  | [x; Iterable(_, l)] -> Types.of_list (x :: l)
   | _ -> raise Invalid_args
 )
 let concat = Lambda (fun args ->
@@ -120,28 +116,27 @@ let concat = Lambda (fun args ->
 )
 
 let vec = Lambda (function
-  | [List(x)] -> Vector(x)
-  | [Vector(_) as x] -> x
+  | [Iterable(_, x)] -> Types.of_vector x
   | _ -> raise Invalid_args
 )
 
 let nth = Lambda (function
-  | [(List(l) | Vector(l)); Integer(i)] -> (
+  | [Iterable(_, l); Integer(i)] -> (
       try List.nth l i
       with _ -> raise Out_of_bounds
   )
   | _ -> raise Invalid_args
 )
 let first = Lambda (function
-  | [(List([]) | Vector([]))] -> Nil 
-  | [(List(x :: _) | Vector(x :: _))] -> x
+  | [Iterable(_, [])] -> Nil 
+  | [Iterable(_, x :: _)] -> x
   | [Nil] -> Nil
   | _ -> raise Invalid_args
 )
 let rest = Lambda (function
-  | [(List([]) | Vector([]))] -> List([])
-  | [(List(_ :: xs) | Vector(_ :: xs))] -> List(xs)
-  | [Nil] -> List([])
+  | [Iterable(_, _ :: xs)] -> Types.of_list xs
+  | [Nil]
+  | [Iterable(_, [])] -> Types.of_list [] 
   | _ -> raise Invalid_args
 )
 
@@ -152,7 +147,7 @@ let throw = Lambda (function
 
 let apply = Lambda (fun args ->
   let rec merge_args = function
-    | [List(l) | Vector(l)] -> l
+    | [Iterable(_, l)] -> l
     | x :: xs -> x :: merge_args xs
     | _ -> raise Invalid_args
   in
@@ -161,7 +156,7 @@ let apply = Lambda (fun args ->
   | _ -> raise Invalid_args
 )
 let map = Lambda (function
-  | [Lambda(fn); (List(l) | Vector(l))] -> List(List.map (fun ls -> fn [ls]) l)
+  | [Lambda(fn); Iterable(_, l)] -> Types.of_list (List.map (fun ls -> fn [ls]) l)
   | _ -> raise Invalid_args
 )
 
@@ -170,15 +165,14 @@ let is_true = Lambda (function [Bool(true)] -> Bool(true) | _ -> Bool(false))
 let is_false = Lambda (function [Bool(false)] -> Bool(true) | _ -> Bool(false))
 let is_symbol = Lambda (function [Symbol(_)] -> Bool(true) | _ -> Bool(false))
 let is_keyword = Lambda (function [Keyword(_)] -> Bool(true) | _ -> Bool(false))
-let is_vector = Lambda (function [Vector(_)] -> Bool(true) | _ -> Bool(false))
+let is_vector = Lambda (function [Iterable(Vector, _)] -> Bool(true) | _ -> Bool(false))
 let is_map = Lambda (function [Hashmap(_)] -> Bool(true) | _ -> Bool(false))
 
 let is_sequential = Lambda (function
-  | [List(_)] -> Bool(true)
-  | [Vector(_)] -> Bool(true)
+  | [Iterable(_, _)] -> Bool(true)
   | _ -> Bool(false))
 
-let vector = Lambda (fun args -> Vector(args))
+let vector = Lambda (Types.of_vector)
 let symbol = Lambda(function [String(x)] -> Symbol(x) | _ -> raise Invalid_args)
 let keyword = Lambda(function
   | [String(x)] -> Keyword(x) 

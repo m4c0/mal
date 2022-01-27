@@ -25,12 +25,14 @@ let pr_str readably t =
   | Types.Symbol(s) -> s 
   | Types.Lambda(_) -> "#<function>"
   | Types.Macro(_) -> "#<macro>"
-  | Types.List(l) ->
+  | Types.Iterable(t, l) ->
       let ls = List.map pr l in
-      "(" ^ (String.concat " " ls) ^ ")" 
-  | Types.Vector(l) ->
-      let ls = List.map pr l in
-      "[" ^ (String.concat " " ls) ^ "]" 
+      let str = String.concat " " ls in
+      begin
+        match t with
+        | List -> Printf.sprintf "(%s)" str
+        | Vector -> Printf.sprintf "[%s]" str
+      end
   | Types.Hashmap(h) ->
       let hs = Types.TMap.fold tmap_fold h [] in
       "{" ^ (String.concat " " hs) ^ "}"

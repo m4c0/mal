@@ -66,7 +66,7 @@ let argv = Sys.argv |> Array.to_list |> List.tl |> List.map Types.of_string
 
 let repl =
   env := Env.set "eval" (Types.Lambda eval) !env;
-  env := Env.set "*ARGV*" (Types.List argv) !env;
+  env := Env.set "*ARGV*" (Types.of_list argv) !env;
   "(def! not (fn* (a) (if a false true)))" |> rep env |> ignore;
   "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))" |> rep env |> ignore;
   "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))" |> rep env |> ignore;
