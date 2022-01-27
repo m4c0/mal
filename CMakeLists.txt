@@ -16,14 +16,16 @@ function(mal_step_test_script TEST_NAME MAL_FILE)
   set(DIR ${CMAKE_SOURCE_DIR}/impls/tests)
 
   add_test(NAME ${TEST_NAME} WORKING_DIRECTORY ${DIR} COMMAND ${CMD})
-
+endfunction()
+function(mal_step_selfhost_test_script TEST_NAME MAL_FILE)
+  mal_step_test_script(mal-${TEST_NAME} ${MAL_FILE} ${ARGN} ../mal/${MAL_FILE}.mal)
 endfunction()
 
 function(mal_step_test TEST_NAME MAL_FILE TARGET)
   mal_step_test_script(${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}>)
 endfunction()
 function(mal_step_selfhost_test TEST_NAME MAL_FILE TARGET)
-  mal_step_test_script(mal-${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}> ../mal/${MAL_FILE}.mal)
+  mal_step_selfhost_test_script(${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}>)
 endfunction()
 
 function(mal_perf_step LANG TARGET NAME)

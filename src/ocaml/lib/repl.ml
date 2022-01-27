@@ -73,19 +73,35 @@ let eval args =
   | [ast] -> Eval.eval env ast
   | _ -> raise Core.Invalid_args
 
-let argv = Sys.argv |> Array.to_list |> List.tl |> List.map Types.of_string
+let run_file scr argv =
+  env := Env.set "*ARGV*" argv !env;
+  Printf.sprintf "(load-file \"%s\")" scr |> rep env |> ignore
 
-let repl =
-  env := Env.set "eval" (Types.Lambda eval) !env;
-  env := Env.set "*ARGV*" (Types.of_list argv) !env;
-  [ "(def! not (fn* (a) (if a false true)))";
-    "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))";
-    "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))";
-    "(println (str \"Mal [\" *host-language* \"]\"))"
-  ] |> List.map (rep env) |> ignore;
+let run_loop argv =
+  env := Env.set "*ARGV*" argv !env;
   try
     while true do
       print_string "user> ";
     read_line () |> rep env |> print_endline
     done;
   with End_of_file -> ()
+
+ 
+let repl =
+  let argv =
+    Sys.argv
+    |> Array.to_list
+    |> List.map Types.of_string 
+  in
+
+  env := Env.set "eval" (Types.Lambda eval) !env;
+  [ "(def! not (fn* (a) (if a false true)))";
+    "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))";
+    "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))";
+    "(println (str \"Mal [\" *host-language* \"]\"))"
+  ] |> List.map (rep env) |> ignore;
+
+  match argv with
+  | _ :: String(s) :: xs -> run_file s (Types.of_list xs)
+  | _ :: xs -> run_loop (Types.of_list xs)
+  | [] -> run_loop Types.empty_list
