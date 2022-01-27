@@ -167,6 +167,10 @@ let is_symbol = Lambda (function [Symbol(_)] -> Bool(true) | _ -> Bool(false))
 let is_keyword = Lambda (function [Keyword(_)] -> Bool(true) | _ -> Bool(false))
 let is_vector = Lambda (function [Iterable(Vector, _)] -> Bool(true) | _ -> Bool(false))
 let is_map = Lambda (function [Hashmap(_)] -> Bool(true) | _ -> Bool(false))
+let is_fn = Lambda (function [Lambda(_)] -> Bool(true) | _ -> Bool(false))
+let is_string = Lambda (function [String(_)] -> Bool(true) | _ -> Bool(false))
+let is_number = Lambda (function [Integer(_)] -> Bool(true) | _ -> Bool(false))
+let is_macro = Lambda (function [Macro(_)] -> Bool(true) | _ -> Bool(false))
 
 let is_sequential = Lambda (function
   | [Iterable(_, _)] -> Bool(true)
@@ -225,3 +229,33 @@ let vals = Lambda(function
   | [Hashmap(x)] -> let f (_, v) = v in TMap.bindings x |> List.map f |> Types.of_list
   | _ -> raise Invalid_args
 )
+
+let readline = Lambda(function
+  | [String(x)] -> print_string x; String(read_line ())
+  | _ -> raise Invalid_args
+)
+
+let conj = Lambda(function
+  | Iterable(List, l) :: xs -> Types.of_list (xs @ l)
+  | Iterable(Vector, l) :: xs -> Types.of_vector (l @ xs)
+  | _ -> raise Invalid_args
+)
+let seq = Lambda(function
+  | [Iterable(_, [])]
+  | [String("")]
+  | [Nil] -> Nil
+  | [Iterable(List, _) as x] -> x
+  | [Iterable(Vector, x)] -> Types.of_list x
+  | [String(s)] ->
+      List.init (String.length s) (String.get s)
+      |> List.map (String.make 1)
+      |> List.map Types.of_string
+      |> Types.of_list
+  | _ -> raise Invalid_args
+)
+
+let timems = Lambda(function
+  | [] -> Integer(Float.to_int (Unix.gettimeofday() *. 1000.0))
+  | _ -> raise Invalid_args
+)
+

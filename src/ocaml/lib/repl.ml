@@ -55,6 +55,17 @@ let env =
     |> Env.set "contains?" Core.contains
     |> Env.set "keys" Core.keys
     |> Env.set "vals" Core.vals
+    |> Env.set "readline" Core.readline
+    |> Env.set "*host-language*" (String "ocaml")
+    |> Env.set "time-ms" Core.timems
+    |> Env.set "conj" Core.conj
+    |> Env.set "fn?" Core.is_fn
+    |> Env.set "string?" Core.is_string
+    |> Env.set "number?" Core.is_number
+    |> Env.set "macro?" Core.is_macro
+    |> Env.set "seq" Core.seq
+    |> Env.set "meta" Nil
+    |> Env.set "with-meta" Nil
     |> ref
 
 let eval args = 
@@ -67,9 +78,11 @@ let argv = Sys.argv |> Array.to_list |> List.tl |> List.map Types.of_string
 let repl =
   env := Env.set "eval" (Types.Lambda eval) !env;
   env := Env.set "*ARGV*" (Types.of_list argv) !env;
-  "(def! not (fn* (a) (if a false true)))" |> rep env |> ignore;
-  "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))" |> rep env |> ignore;
-  "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))" |> rep env |> ignore;
+  [ "(def! not (fn* (a) (if a false true)))";
+    "(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\nnil)\")))))";
+    "(defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw \"odd number of forms to cond\")) (cons 'cond (rest (rest xs)))))))";
+    "(println (str \"Mal [\" *host-language* \"]\"))"
+  ] |> List.map (rep env) |> ignore;
   try
     while true do
       print_string "user> ";
