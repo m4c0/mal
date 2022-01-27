@@ -28,22 +28,22 @@ function(mal_step_selfhost_test TEST_NAME MAL_FILE TARGET)
   mal_step_selfhost_test_script(${TEST_NAME} ${MAL_FILE} $<TARGET_FILE:${TARGET}>)
 endfunction()
 
-function(mal_perf_step LANG TARGET NAME)
+function(mal_perf_step LANG NAME)
   add_custom_target("${LANG}-${NAME}"
-    COMMAND ${TARGET} ${NAME}.mal
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/impls/tests)
+    COMMAND ${ARGN} ${NAME}.mal
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/impls/tests)
 endfunction()
-function(mal_perf LANG TARGET)
-  mal_perf_step(${LANG} ${TARGET} perf1)
-  mal_perf_step(${LANG} ${TARGET} perf2)
-  mal_perf_step(${LANG} ${TARGET} perf3)
+function(mal_perf LANG)
+  mal_perf_step(${LANG} perf1 ${ARGN})
+  mal_perf_step(${LANG} perf2 ${ARGN})
+  mal_perf_step(${LANG} perf3 ${ARGN})
   add_custom_target(${LANG}-perf
     DEPENDS ${LANG}-perf1
     DEPENDS ${LANG}-perf2
     DEPENDS ${LANG}-perf3)
 endfunction()
 
-#add_subdirectory(src/cpp)
+add_subdirectory(src/cpp)
 #add_subdirectory(src/llvm)
 #add_subdirectory(src/llvm-ir)
 add_subdirectory(src/ocaml)

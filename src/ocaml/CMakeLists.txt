@@ -24,3 +24,5 @@ mal_step_selfhost_test_script(ocaml-step7 step7_quote dune exe ${DUNE_ARGS} bin/
 mal_step_selfhost_test_script(ocaml-step8 step8_macros dune exe ${DUNE_ARGS} bin/step2.exe)
 mal_step_selfhost_test_script(ocaml-step9 step9_try dune exe ${DUNE_ARGS} bin/step2.exe)
 mal_step_selfhost_test_script(ocaml-stepA stepA_mal dune exe ${DUNE_ARGS} bin/step2.exe)
+
+mal_perf(ocaml dune exe ${DUNE_ARGS} bin/step2.exe)
