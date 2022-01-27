@@ -15,6 +15,7 @@ let to_string = function
   | Types.Application_exception(t) -> "Error: " ^ (Printer.pr_str_r t)
   | Types.Unbalanced_hashmap -> "Unbalanced hashmap spec"
   | Types.Expecting_symbol -> "Expecting symbol"
+  | Failure x -> "Failed: " ^ x
   | _ -> "Generic exception"
 
 let invalid_form () = raise Invalid_form

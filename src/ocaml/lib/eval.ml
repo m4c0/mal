@@ -64,6 +64,7 @@ let rec eval env ast =
             | e -> e |> Exc.to_string |> Types.of_string
           in fn_closure [b] [exc] c
     )
+    | List([Symbol("try*"); a]) -> eval_form a 
     | List(Symbol("try*") :: _) -> Exc.invalid_form ()
     | List(Symbol("catch*") :: _) -> Exc.invalid_form ()
 
